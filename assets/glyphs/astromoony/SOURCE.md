@@ -1,0 +1,95 @@
+# Astromoony — astronomical symbol font with per-glyph SVG sources
+
+- **Source:** https://github.com/RobertWinslow/Astromoony-Font
+- **License:** Public domain (per README) (https://github.com/RobertWinslow/Astromoony-Font#license)
+- **Attribution / credit line:** Robert Martin Winslow, Astromoony (public domain)
+- **Quality tier:** A
+
+Maps real Unicode code points (U+2609 Sun, U+263D Moon, U+263F–2647 planets, U+2BD3 Pluto alt…). SVG files are named by code point. No zodiac signs or nodes; pair with Noto Sans Symbols for those.
+
+## Files
+
+- `AstromoonySans.ttf`
+- `AstromoonySerif.ttf`
+- `README-upstream.md`
+- `svg/1F728-49.svg`
+- `svg/1F728.svg`
+- `svg/1F77C.svg`
+- `svg/1F77D-49.svg`
+- `svg/1F77D.svg`
+- `svg/1F77E-49.svg`
+- `svg/1F77E.svg`
+- `svg/1F77F-49.svg`
+- `svg/1F77F.svg`
+- `svg/1f77b-49-49.svg`
+- `svg/1f77b-49.svg`
+- `svg/1f77b.svg`
+- `svg/25a1.svg`
+- `svg/2609.svg`
+- `svg/263d.svg`
+- `svg/263e.svg`
+- `svg/263f.svg`
+- `svg/2640.svg`
+- `svg/2641-49.svg`
+- `svg/2641.svg`
+- `svg/2642-49-49.svg`
+- `svg/2642-49.svg`
+- `svg/2642.svg`
+- `svg/2643-49-49-49.svg`
+- `svg/2643-49-49.svg`
+- `svg/2643-49-56.svg`
+- `svg/2643-49.svg`
+- `svg/2643.svg`
+- `svg/2644-49-49-49.svg`
+- `svg/2644-49-49.svg`
+- `svg/2644-49-56.svg`
+- `svg/2644-49.svg`
+- `svg/2644-56-49-49-49.svg`
+- `svg/2644-56-49-49.svg`
+- `svg/2644-56-49.svg`
+- `svg/2644-56.svg`
+- `svg/2644.svg`
+- `svg/2645-49-49-49.svg`
+- `svg/2645-49-49.svg`
+- `svg/2645-49-56.svg`
+- `svg/2645-49.svg`
+- `svg/2645-56.svg`
+- `svg/2645.svg`
+- `svg/2646-49-49.svg`
+- `svg/2646-49.svg`
+- `svg/2646-56-49-49-49.svg`
+- `svg/2646.svg`
+- `svg/2647-49-49-49.svg`
+- `svg/2647-49-49.svg`
+- `svg/2647-49-56.svg`
+- `svg/2647-49.svg`
+- `svg/2647-56.svg`
+- `svg/2647.svg`
+- `svg/26B3.svg`
+- `svg/26B4.svg`
+- `svg/26B5.svg`
+- `svg/26B6.svg`
+- `svg/26e2-49-49-49.svg`
+- `svg/26e2-49-49.svg`
+- `svg/26e2-49-56.svg`
+- `svg/26e2-49.svg`
+- `svg/26e2-56.svg`
+- `svg/26e2.svg`
+- `svg/2BD3-49-49-49.svg`
+- `svg/2BD3-49-49.svg`
+- `svg/2BD3-49-56.svg`
+- `svg/2BD3-49.svg`
+- `svg/2BD3-56.svg`
+- `svg/2BD3.svg`
+- `svg/2BD4.svg`
+- `svg/2BD5.svg`
+- `svg/2BD6.svg`
+- `svg/2BF1.svg`
+- `svg/2Bf2.svg`
+- `svg/2bc9-49.svg`
+- `svg/2bc9.svg`
+- `svg/2be6.svg`
+- `svg/2bf0-49.svg`
+- `svg/2bf0.svg`
+- `svg/49.svg`
+- `svg/56.svg`

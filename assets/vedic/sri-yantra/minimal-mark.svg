@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- Minimal Mark — Innermost Sri Yantra (Avaranas 8-9) -->
+  <!-- @vibzart/sri-yantra -->
+  <path d="M 54.1437 382.5569 L 457.8563 382.5569 L 256 51.2 Z" fill="none" stroke="#C9501C" stroke-width="3.072" stroke-linejoin="miter" data-id="U4" data-tattva="shiva" />
+  <path d="M 109.7924 291.2069 L 402.2076 291.2069 L 256 460.8 Z" fill="none" stroke="#C9501C" stroke-width="3.072" stroke-linejoin="miter" data-id="D5" data-tattva="shakti" />
+  <circle cx="256" cy="321.1661" r="7.68" fill="#C9501C" />
+</svg>

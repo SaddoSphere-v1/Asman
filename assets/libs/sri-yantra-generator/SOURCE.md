@@ -1,0 +1,52 @@
+# @vibzart/sri-yantra — generator library (SVG/Canvas/Three.js/React), ESM dist
+
+- **Source:** https://github.com/vibzart/sri-yantra (npm @vibzart/sri-yantra 0.3.1)
+- **License:** MIT (https://opensource.org/licenses/MIT)
+- **Attribution / credit line:** Vibz.Art, MIT
+- **Quality tier:** B
+
+## Files
+
+- `dist/index.js`
+- `dist/cli.d.ts`
+- `dist/index.d.ts`
+- `dist/cli.js`
+- `dist/react/SriYantra3D.js`
+- `dist/react/SriYantra.d.ts`
+- `dist/react/SriYantra.js`
+- `dist/react/index.js`
+- `dist/react/SriYantra3D.d.ts`
+- `dist/react/index.d.ts`
+- `dist/svg/renderer.d.ts`
+- `dist/svg/renderer.js`
+- `dist/svg/animated.d.ts`
+- `dist/svg/index.js`
+- `dist/svg/index.d.ts`
+- `dist/svg/animated.js`
+- `dist/canvas/renderer.d.ts`
+- `dist/canvas/renderer.js`
+- `dist/canvas/index.js`
+- `dist/canvas/index.d.ts`
+- `dist/three/scene.js`
+- `dist/three/geometry.d.ts`
+- `dist/three/geometry.js`
+- `dist/three/materials.js`
+- `dist/three/index.js`
+- `dist/three/materials.d.ts`
+- `dist/three/scene.d.ts`
+- `dist/three/index.d.ts`
+- `dist/core/types.d.ts`
+- `dist/core/optical.d.ts`
+- `dist/core/optical.js`
+- `dist/core/transform.d.ts`
+- `dist/core/avaranas.d.ts`
+- `dist/core/transform.js`
+- `dist/core/geometry.d.ts`
+- `dist/core/geometry.js`
+- `dist/core/intersections.js`
+- `dist/core/types.js`
+- `dist/core/index.js`
+- `dist/core/avaranas.js`
+- `dist/core/index.d.ts`
+- `dist/core/intersections.d.ts`
+- `package.json`

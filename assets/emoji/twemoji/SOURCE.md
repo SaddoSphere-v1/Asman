@@ -1,0 +1,55 @@
+# Twemoji — zodiac and celestial SVGs
+
+- **Source:** https://github.com/jdecked/twemoji
+- **License:** CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)
+- **Attribution / credit line:** Twemoji graphics © Twitter / jdecked, CC BY 4.0
+- **Quality tier:** A
+
+## Files
+
+- `1f303.svg`
+- `1f305.svg`
+- `1f30c.svg`
+- `1f311.svg`
+- `1f312.svg`
+- `1f313.svg`
+- `1f314.svg`
+- `1f315.svg`
+- `1f316.svg`
+- `1f317.svg`
+- `1f318.svg`
+- `1f319.svg`
+- `1f31a.svg`
+- `1f31b.svg`
+- `1f31c.svg`
+- `1f31d.svg`
+- `1f31e.svg`
+- `1f31f.svg`
+- `1f320.svg`
+- `1f4ab.svg`
+- `1f4ff.svg`
+- `1f52d.svg`
+- `1f52e.svg`
+- `1f549.svg`
+- `1f6d5.svg`
+- `1fa90.svg`
+- `1fa94.svg`
+- `1fab7.svg`
+- `2600.svg`
+- `2604.svg`
+- `2638.svg`
+- `2648.svg`
+- `2649.svg`
+- `264a.svg`
+- `264b.svg`
+- `264c.svg`
+- `264d.svg`
+- `264e.svg`
+- `264f.svg`
+- `2650.svg`
+- `2651.svg`
+- `2652.svg`
+- `2653.svg`
+- `26ce.svg`
+- `2728.svg`
+- `2b50.svg`

@@ -1,0 +1,51 @@
+# Material Design Icons by Pictogrammers — celestial subset
+
+- **Source:** Fetched via Iconify API (https://api.iconify.design/mdi/<name>.svg)
+- **License:** Pictogrammers Free License (Apache 2.0 for icons) (https://pictogrammers.com/docs/general/license/)
+- **Attribution / credit line:** Material Design Icons by Pictogrammers
+- **Quality tier:** A
+
+## Files
+
+- `candle.svg`
+- `compass-rose.svg`
+- `creation.svg`
+- `crystal-ball.svg`
+- `earth.svg`
+- `flower-tulip.svg`
+- `meditation.svg`
+- `moon-first-quarter.svg`
+- `moon-full.svg`
+- `moon-last-quarter.svg`
+- `moon-new.svg`
+- `moon-waning-crescent.svg`
+- `moon-waning-gibbous.svg`
+- `moon-waxing-crescent.svg`
+- `moon-waxing-gibbous.svg`
+- `om.svg`
+- `orbit.svg`
+- `planet.svg`
+- `star-four-points-outline.svg`
+- `star-four-points.svg`
+- `sun-clock.svg`
+- `sun-compass.svg`
+- `telescope.svg`
+- `weather-night.svg`
+- `weather-sunny.svg`
+- `weather-sunset-down.svg`
+- `weather-sunset-up.svg`
+- `weather-sunset.svg`
+- `white-balance-sunny.svg`
+- `yin-yang.svg`
+- `zodiac-aquarius.svg`
+- `zodiac-aries.svg`
+- `zodiac-cancer.svg`
+- `zodiac-capricorn.svg`
+- `zodiac-gemini.svg`
+- `zodiac-leo.svg`
+- `zodiac-libra.svg`
+- `zodiac-pisces.svg`
+- `zodiac-sagittarius.svg`
+- `zodiac-scorpio.svg`
+- `zodiac-taurus.svg`
+- `zodiac-virgo.svg`

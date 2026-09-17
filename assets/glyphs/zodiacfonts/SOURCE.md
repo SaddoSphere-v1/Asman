@@ -1,0 +1,77 @@
+# Zodiac Fonts — free tier (55 astrological SVG glyphs + WOFF2 icon font)
+
+- **Source:** https://www.zodiacfonts.com / npm zodiacfonts@1.1.1
+- **License:** SIL OFL 1.1 (https://scripts.sil.org/OFL)
+- **Attribution / credit line:** Zodiac Fonts (zodiacfonts.com), SIL OFL 1.1
+- **Quality tier:** A
+
+Clean currentColor SVGs: 12 signs, 11 planets, North/South Node (Rahu/Ketu), Lilith, Chiron, 12 houses + ASC/MC, 8 lunar phases, 5 major aspects, retrograde. Also shipped as a PUA icon font (see glyphs.json for code points).
+
+## Files
+
+- `glyphs.json`
+- `README.md`
+- `package.json`
+- `CHANGELOG.md`
+- `OFL.txt`
+- `icons/signs/sagittarius.svg`
+- `icons/signs/capricorn.svg`
+- `icons/signs/aquarius.svg`
+- `icons/signs/gemini.svg`
+- `icons/signs/virgo.svg`
+- `icons/signs/aries.svg`
+- `icons/signs/cancer.svg`
+- `icons/signs/libra.svg`
+- `icons/signs/scorpio.svg`
+- `icons/signs/leo.svg`
+- `icons/signs/taurus.svg`
+- `icons/signs/pisces.svg`
+- `icons/major-aspects/trine.svg`
+- `icons/major-aspects/square.svg`
+- `icons/major-aspects/conjunction.svg`
+- `icons/major-aspects/opposition.svg`
+- `icons/major-aspects/sextile.svg`
+- `icons/movements/retrograde.svg`
+- `icons/celestial-points/north-node.svg`
+- `icons/celestial-points/south-node.svg`
+- `icons/celestial-points/lilith.svg`
+- `icons/main-planets/saturn.svg`
+- `icons/main-planets/mars.svg`
+- `icons/main-planets/earth.svg`
+- `icons/main-planets/jupiter.svg`
+- `icons/main-planets/venus.svg`
+- `icons/main-planets/moon.svg`
+- `icons/main-planets/pluto.svg`
+- `icons/main-planets/mercury.svg`
+- `icons/main-planets/neptune.svg`
+- `icons/main-planets/uranus.svg`
+- `icons/main-planets/sun.svg`
+- `icons/dwarf-planets-and-asteroids/chiron.svg`
+- `icons/lunar/waxing-gibbous.svg`
+- `icons/lunar/first-quarter.svg`
+- `icons/lunar/waxing-crescent.svg`
+- `icons/lunar/new-moon.svg`
+- `icons/lunar/last-quarter.svg`
+- `icons/lunar/full-moon.svg`
+- `icons/lunar/waning-crescent.svg`
+- `icons/lunar/waning-gibbous.svg`
+- `icons/houses/house-four.svg`
+- `icons/houses/medium-coeli.svg`
+- `icons/houses/house-seven.svg`
+- `icons/houses/house-eleven.svg`
+- `icons/houses/house-one.svg`
+- `icons/houses/house-twelve.svg`
+- `icons/houses/house-nine.svg`
+- `icons/houses/ascendant.svg`
+- `icons/houses/house-eight.svg`
+- `icons/houses/house-five.svg`
+- `icons/houses/house-two.svg`
+- `icons/houses/house-three.svg`
+- `icons/houses/house-ten.svg`
+- `icons/houses/house-six.svg`
+- `fonts/ZodiacFontFREE.woff2`
+- `css/zodiac-fonts.min.css`
+- `css/zodiac-fonts.css`
+- `scss/zodiac-fonts.scss`
+- `js/zodiac-fonts.js`
+- `js/zodiac-fonts.min.js`

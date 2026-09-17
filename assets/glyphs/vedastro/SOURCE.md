@@ -1,0 +1,71 @@
+# VedAstro UI icons: 9 graha icons, 30 tithi Moon phases, 12 rashi event icons, zodiac wheel
+
+- **Source:** https://github.com/VedAstro/VedAstro (Website/wwwroot/images/SkyChart, Others/VedicCharts)
+- **License:** MIT (https://opensource.org/licenses/MIT)
+- **Attribution / credit line:** VedAstro (vedastro.org), MIT
+- **Quality tier:** B
+
+The only MIT-licensed set found with explicit Rahu and Ketu icons. Caveat: the nine graha icons are cartoon planets with the English name badge baked into the SVG ("JUPITER", "KETU"…) and Rahu/Ketu are recoloured crescents, so they need editing before production use. Strong parts: moon-1.svg … moon-30.svg are photographic-style Moon renders for the 30 tithis (Shukla 1 → Krishna 15); the 12 rashi "event" icons are constellation stick-figures; zodiac-360.svg is a full zodiac wheel; north-chart-source.svg / south-chart-source.svg are editable North- and South-Indian chart templates.
+
+## Files
+
+- `aquarius-event-icon.svg`
+- `aries-event-icon.svg`
+- `cancer-event-icon.svg`
+- `capricorn-event-icon.svg`
+- `dasa-example.svg`
+- `gemini-event-icon.svg`
+- `jupiter.svg`
+- `ketu.svg`
+- `leo-event-icon.svg`
+- `libra-event-icon.svg`
+- `mars.svg`
+- `mercury.svg`
+- `moon-1.svg`
+- `moon-10.svg`
+- `moon-11.svg`
+- `moon-12.svg`
+- `moon-13.svg`
+- `moon-14.svg`
+- `moon-15.svg`
+- `moon-16.svg`
+- `moon-17.svg`
+- `moon-18.svg`
+- `moon-19.svg`
+- `moon-2.svg`
+- `moon-20.svg`
+- `moon-21.svg`
+- `moon-22.svg`
+- `moon-23.svg`
+- `moon-24.svg`
+- `moon-25.svg`
+- `moon-26.svg`
+- `moon-27.svg`
+- `moon-28.svg`
+- `moon-29.svg`
+- `moon-3.svg`
+- `moon-30.svg`
+- `moon-4.svg`
+- `moon-5.svg`
+- `moon-6.svg`
+- `moon-7.svg`
+- `moon-8.svg`
+- `moon-9.svg`
+- `moon.svg`
+- `north-chart-source.svg`
+- `pisces-event-icon.svg`
+- `planet-bar-chart.svg`
+- `rahu.svg`
+- `sagittarius-event-icon.svg`
+- `saturn.svg`
+- `scorpio-event-icon.svg`
+- `south-chart-source.svg`
+- `sun.svg`
+- `taurus-event-icon.svg`
+- `venus.svg`
+- `virgo-event-icon.svg`
+- `zodiac-360.svg`
+- `zodiac-event-icon.svg`
+- `zodiac-wheel-3-white.png`
+- `zodiac-wheel-512.png`
+- `zodiac-wheel-transparent.png`

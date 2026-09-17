@@ -1,0 +1,94 @@
+# Weather Icons (Erik Flowers) — 28+28 Moon phase glyphs, sun, eclipses, clock faces
+
+- **Source:** https://github.com/erikflowers/weather-icons
+- **License:** SIL OFL 1.1 (icons); MIT (CSS) (https://scripts.sil.org/OFL)
+- **Attribution / credit line:** Weather Icons by Erik Flowers (SIL OFL 1.1); artwork by Lukas Bischoff
+- **Quality tier:** A
+
+28 phase steps ≈ one glyph per tithi (the 30 tithis map onto 28 with two doublings); the "alt" set draws the lit portion as a disc.
+
+## Files
+
+- `svg/wi-moon-new.svg`
+- `svg/wi-moon-waxing-crescent-1.svg`
+- `svg/wi-moon-waxing-crescent-2.svg`
+- `svg/wi-moon-waxing-crescent-3.svg`
+- `svg/wi-moon-waxing-crescent-4.svg`
+- `svg/wi-moon-waxing-crescent-5.svg`
+- `svg/wi-moon-waxing-6.svg`
+- `svg/wi-moon-first-quarter.svg`
+- `svg/wi-moon-waxing-gibbous-1.svg`
+- `svg/wi-moon-waxing-gibbous-2.svg`
+- `svg/wi-moon-waxing-gibbous-3.svg`
+- `svg/wi-moon-waxing-gibbous-4.svg`
+- `svg/wi-moon-waxing-gibbous-5.svg`
+- `svg/wi-moon-waxing-gibbous-6.svg`
+- `svg/wi-moon-full.svg`
+- `svg/wi-moon-waning-gibbous-1.svg`
+- `svg/wi-moon-waning-gibbous-2.svg`
+- `svg/wi-moon-waning-gibbous-3.svg`
+- `svg/wi-moon-waning-gibbous-4.svg`
+- `svg/wi-moon-waning-gibbous-5.svg`
+- `svg/wi-moon-waning-gibbous-6.svg`
+- `svg/wi-moon-third-quarter.svg`
+- `svg/wi-moon-waning-crescent-1.svg`
+- `svg/wi-moon-waning-crescent-2.svg`
+- `svg/wi-moon-waning-crescent-3.svg`
+- `svg/wi-moon-waning-crescent-4.svg`
+- `svg/wi-moon-waning-crescent-5.svg`
+- `svg/wi-moon-waning-crescent-6.svg`
+- `svg/wi-moon-alt-new.svg`
+- `svg/wi-moon-alt-waxing-crescent-1.svg`
+- `svg/wi-moon-alt-waxing-crescent-2.svg`
+- `svg/wi-moon-alt-waxing-crescent-3.svg`
+- `svg/wi-moon-alt-waxing-crescent-4.svg`
+- `svg/wi-moon-alt-waxing-crescent-5.svg`
+- `svg/wi-moon-alt-waxing-crescent-6.svg`
+- `svg/wi-moon-alt-first-quarter.svg`
+- `svg/wi-moon-alt-waxing-gibbous-1.svg`
+- `svg/wi-moon-alt-waxing-gibbous-2.svg`
+- `svg/wi-moon-alt-waxing-gibbous-3.svg`
+- `svg/wi-moon-alt-waxing-gibbous-4.svg`
+- `svg/wi-moon-alt-waxing-gibbous-5.svg`
+- `svg/wi-moon-alt-waxing-gibbous-6.svg`
+- `svg/wi-moon-alt-full.svg`
+- `svg/wi-moon-alt-waning-gibbous-1.svg`
+- `svg/wi-moon-alt-waning-gibbous-2.svg`
+- `svg/wi-moon-alt-waning-gibbous-3.svg`
+- `svg/wi-moon-alt-waning-gibbous-4.svg`
+- `svg/wi-moon-alt-waning-gibbous-5.svg`
+- `svg/wi-moon-alt-waning-gibbous-6.svg`
+- `svg/wi-moon-alt-third-quarter.svg`
+- `svg/wi-moon-alt-waning-crescent-1.svg`
+- `svg/wi-moon-alt-waning-crescent-2.svg`
+- `svg/wi-moon-alt-waning-crescent-3.svg`
+- `svg/wi-moon-alt-waning-crescent-4.svg`
+- `svg/wi-moon-alt-waning-crescent-5.svg`
+- `svg/wi-moon-alt-waning-crescent-6.svg`
+- `svg/wi-day-sunny.svg`
+- `svg/wi-night-clear.svg`
+- `svg/wi-stars.svg`
+- `svg/wi-sunrise.svg`
+- `svg/wi-sunset.svg`
+- `svg/wi-moonrise.svg`
+- `svg/wi-moonset.svg`
+- `svg/wi-horizon.svg`
+- `svg/wi-horizon-alt.svg`
+- `svg/wi-solar-eclipse.svg`
+- `svg/wi-lunar-eclipse.svg`
+- `svg/wi-meteor.svg`
+- `svg/wi-time-1.svg`
+- `svg/wi-time-2.svg`
+- `svg/wi-time-3.svg`
+- `svg/wi-time-4.svg`
+- `svg/wi-time-5.svg`
+- `svg/wi-time-6.svg`
+- `svg/wi-time-7.svg`
+- `svg/wi-time-8.svg`
+- `svg/wi-time-9.svg`
+- `svg/wi-time-10.svg`
+- `svg/wi-time-11.svg`
+- `svg/wi-time-12.svg`
+- `font/weathericons-regular-webfont.woff2`
+- `css/weather-icons.min.css`
+- `README-upstream.md`
