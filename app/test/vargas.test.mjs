@@ -53,3 +53,15 @@ test('Vimshopaka: weights total 20 per scheme; scores stay within 0..20; vargott
   const nav = dv.charts.find(v => v.D === 9);
   nav.planets.forEach((x, p) => assert.equal(x.vargottama, x.sign === fixtures[0].vargas['1'].planets[p]));
 });
+
+test('upagrahas and special lagnas map into every varga by the same division rule', async () => {
+  const eph = await getEph();
+  const chart = computeChart(eph, fixtures[0].input);
+  const extra = [{ name: 'Gulika', lon: 123.456, group: 'upagraha' }, { name: 'Hora lagna', lon: 359.9, group: 'lagna' }];
+  for (const v of divisionalCharts(chart, extra).charts) {
+    assert.equal(v.points.length, 2);
+    assert.equal(v.points[0].sign, vargaSign(123.456, v.D));
+    assert.equal(v.points[1].sign, vargaSign(359.9, v.D));
+    assert.equal(v.points[0].house, ((v.points[0].sign - v.lagna.sign) % 12 + 12) % 12 + 1);
+  }
+});

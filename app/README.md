@@ -47,6 +47,7 @@ npm test             # parity + regression tests
 - `test/shadbala-raman.test.mjs`: B.V. Raman's own worked example (16 Oct 1918, Bangalore, Raman ayanamsa) — Sthana, Dig, Kala components, Ayana, Chesta (to 0.05), Naisargika and Drik (Raman aspects) reproduce the book; two known book slips (Saturn's Uchcha arithmetic, Mars's unfolded Dig distance) are excluded.
 - `test/upagrahas.test.mjs`: kalavela and Pranapada longitudes against an independent Python implementation of the same rule.
 - `test/lagnas.test.mjs`: Varnada, Sree, Indu, Bhrigu Bindu and the chara karakas against PyJHora; lagna rates. (PyJHora's own time-based lagnas apply the zone offset twice and run Vighati at 15°/min, so those are checked against Jagannatha Hora instead.)
+- `test/argala.test.mjs`: argala and obstruction rules, tie handling, vipareeta argala and node reversal on constructed charts.
 - `test/avasthas.test.mjs`: rule-level tests of every Deeptadi and Lajjitadi condition on constructed charts.
 - `test/atlas.test.mjs`: place lookup by current name, former name (Madras, Bombay, Bangalore), with region or country, and coordinate fallback.
 

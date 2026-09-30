@@ -62,6 +62,7 @@ tbody tr:last-child th, tbody tr:last-child td { border-bottom: none; }
 figure.matrix tbody th[scope="row"] { position: sticky; left: 0; background: var(--panel); }
 tr.sub th, tr.sub td { background: var(--sub); font-weight: 600; }
 tr.total th, tr.total td { background: var(--total); font-weight: 700; }
+tr.group th, tr.group td { border-top: 2px solid var(--line); }
 td.wrap { white-space: normal; min-width: 14ch; max-width: 34ch; }
 p.note { color: var(--muted); font-size: 12.5px; margin: 6px 2px 0; }
 section#details details summary { cursor: pointer; color: var(--muted); margin-bottom: 8px; }

@@ -3,6 +3,7 @@ import { fmtDMS, fmtHours, formatOffset, localHours } from './time.js';
 import { SEVEN, NINE, PLANET_NAMES, SIGN_NAMES, WEEKDAY_NAMES } from './constants.js';
 import { aspectMatrix, relationshipTables, dignityTable } from './tables.js';
 import { divisionalCharts } from './vargas.js';
+import { computeArgala, ARGALA_HOUSES } from './argala.js';
 
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const n2 = (x) => (x == null || !Number.isFinite(x) ? '—' : (Math.round(x * 100) / 100).toFixed(2));
@@ -29,10 +30,11 @@ export function renderAll({ chart, shadbala, upagrahas, avasthas, ashtakavarga, 
   parts.push(renderHeader(c));
   parts.push(renderPlacements(c, karakas));
   if (lagnas) parts.push(renderLagnas(lagnas));
-  parts.push(renderDivisional(c));
+  parts.push(renderDivisional(c, upagrahas, lagnas));
   parts.push(renderDignities(c));
   parts.push(renderRelationships(c));
   parts.push(renderAspects(c, shadbala.options.drishtiSpecial));
+  parts.push(renderArgala(c));
   parts.push(renderUpagrahas(c, upagrahas));
   parts.push(renderShadbala(c, shadbala));
   parts.push(renderIshtaKashta(shadbala));
@@ -172,8 +174,9 @@ function renderAspects(c, special) {
 
 const DIGNITY_WORD = { exalted: 'Exalted', moolatrikona: 'Moolatrikona', own: 'Own sign', debilitated: 'Debilitated', adhimitra: "Great friend's sign", mitra: "Friend's sign", sama: "Neutral's sign", satru: "Enemy's sign", adhisatru: "Great enemy's sign" };
 
-function renderDivisional(c) {
-  const dv = divisionalCharts(c);
+function renderDivisional(c, upagrahas = [], lagnas = []) {
+  const extra = [...upagrahas.map(u => ({ name: u.name, lon: u.lon, group: 'upagraha' })), ...lagnas.map(l => ({ name: l.name, lon: l.lon, group: 'lagna' }))];
+  const dv = divisionalCharts(c, extra);
   const head = ['Chart', 'Lagna', ...NINE.map(pname)];
   const summary = dv.charts.map(v => [v.name, txt(SIGN_NAMES[v.lagna.sign]), ...v.planets.map(x => txt(SIGN_NAMES[x.sign]))]);
   let html = `<section id="vargas"><h2>Divisional charts</h2>${table('', head, summary, 'matrix')}`;
@@ -181,7 +184,10 @@ function renderDivisional(c) {
     if (v.D === 1) continue;
     const rows = [['Lagna', txt(`${SIGN_NAMES[v.lagna.sign]} ${fmtDMS(v.lagna.deg, 2)}`), txt('1'), txt(''), txt('')]];
     v.planets.forEach((x, p) => rows.push([pname(p), txt(`${SIGN_NAMES[x.sign]} ${fmtDMS(x.deg, 2)}`), txt(String(x.house)), txt(x.dignity ? DIGNITY_WORD[x.dignity] : ''), yes(x.vargottama)]));
-    html += `<h2>${esc(v.name)}</h2>${table('', ['Graha', 'Sign and degree', 'House', 'Dignity', 'Vargottama'], rows)}`;
+    for (const x of v.points) rows.push([{ html: `<span class="${x.group}">${esc(x.name)}</span>` }, txt(`${SIGN_NAMES[x.sign]} ${fmtDMS(x.deg, 2)}`), txt(String(x.house)), txt(''), yes(x.vargottama)]);
+    let t = table('', ['Point', 'Sign and degree', 'House', 'Dignity', 'Vargottama'], rows);
+    t = t.replace('<tr><th scope="row"><span class="upagraha">', '<tr class="group"><th scope="row"><span class="upagraha">').replace('<tr><th scope="row"><span class="lagna">', '<tr class="group"><th scope="row"><span class="lagna">');
+    html += `<h2>${esc(v.name)}</h2>${t}`;
   }
   const schemes = Object.keys(dv.vimshopaka[0]);
   const vb = SEVEN.map(p => [pname(p), ...schemes.map(sch => num(dv.vimshopaka[p][sch]))]);
@@ -197,3 +203,17 @@ function renderLagnas(lagnas) {
   return `<section id="lagnas"><h2>Special lagnas</h2>${table('', ['Lagna', 'Sign and degree', 'Nakshatra and pada', 'Nakshatra lord', 'House', 'Bhava'], rows)}</section>`;
 }
 
+
+function renderArgala(c) {
+  const ag = computeArgala(c);
+  const cell = (a) => {
+    if (!a.giving.length) return txt('—', 'muted');
+    const who = a.giving.map(pname).join(', ');
+    if (a.house === 3) return txt(who, 'wrap');
+    const obs = a.obstructing.length ? ` · ${a.obstructed ? 'obstructed by' : 'not obstructed by'} ${a.obstructing.map(pname).join(', ')}` : ' · unobstructed';
+    return txt(who + obs, 'wrap');
+  };
+  const head = ['Reference', 'Second house', 'Fourth house', 'Eleventh house', 'Fifth house', 'Third house (malefics)'];
+  const rows = [...ag.houses, ...ag.planets].map(r => [`${r.label} · ${SIGN_NAMES[r.sign]}`, ...ARGALA_HOUSES.map(a => cell(r.argala[a.key])), cell(r.argala.vipareeta)]);
+  return `<section id="argala"><h2>Argala</h2>${table('', head, rows)}</section>`;
+}

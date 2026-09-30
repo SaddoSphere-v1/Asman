@@ -124,7 +124,7 @@ export const AMSA_NAMES = {
  * In the vargas other than rasi, moolatrikona is a sign-level notion, so the moolatrikona sign counts as own sign when the planet
  * owns it and by the lord's relationship otherwise (the Moon in Taurus).
  */
-export function divisionalCharts(chart) {
+export function divisionalCharts(chart, extraPoints = []) {
   const compound = compoundMatrix(SEVEN.map(p => chart.planets[p].sign));
   const dignityOf = (p, sign, deg, D) => {
     const d = dignity(p, sign, D === 1 ? deg : null, compound);
@@ -139,7 +139,11 @@ export function divisionalCharts(chart) {
       const dignity = p <= 6 ? dignityOf(p, sign, deg, D) : null;
       return { sign, deg, lon, house: ((sign - lagnaSign) % 12 + 12) % 12 + 1, dignity, vargottama: D !== 1 && sign === P.sign };
     });
-    return { D, name: VARGA_NAMES[D], lagna: { lon: lagnaLon, sign: lagnaSign, deg: lagnaLon - lagnaSign * 30 }, planets };
+    const points = extraPoints.filter(x => x.lon != null).map((x) => {
+      const lon = vargaLongitude(x.lon, D), sign = Math.floor(lon / 30);
+      return { name: x.name, group: x.group, sign, deg: lon - sign * 30, lon, house: ((sign - lagnaSign) % 12 + 12) % 12 + 1, vargottama: D !== 1 && sign === Math.floor(x.lon / 30) };
+    });
+    return { D, name: VARGA_NAMES[D], lagna: { lon: lagnaLon, sign: lagnaSign, deg: lagnaLon - lagnaSign * 30 }, planets, points };
   });
   const byD = Object.fromEntries(charts.map(c => [c.D, c]));
   const vimshopaka = {}, vishwa = {};
