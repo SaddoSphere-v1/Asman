@@ -23,11 +23,13 @@ function table(caption, head, rows, cls = '') {
 const num = (x, d = 2) => ({ html: esc(d === 4 ? n4(x) : d === 2 ? n2(x) : n1(x)), cls: 'num' });
 const txt = (s, cls) => ({ html: esc(s), cls });
 
-export function renderAll({ chart, shadbala, upagrahas, avasthas, ashtakavarga, meta }) {
+export function renderAll({ chart, shadbala, upagrahas, avasthas, ashtakavarga, lagnas, karakas, meta }) {
   const c = chart, off = c.input.utcOffset;
   const parts = [];
   parts.push(renderHeader(c));
   parts.push(renderPlacements(c));
+  if (lagnas) parts.push(renderLagnas(lagnas));
+  if (karakas) parts.push(renderKarakas(karakas));
   parts.push(renderDivisional(c));
   parts.push(renderDignities(c));
   parts.push(renderRelationships(c));
@@ -172,4 +174,15 @@ function renderDivisional(c) {
   const head = ['Chart', 'Lagna', ...NINE.map(pname)];
   const rows = divisionalCharts(c).map(v => [v.name, txt(SIGN_NAMES[v.lagna]), ...v.planets.map(s => txt(SIGN_NAMES[s]))]);
   return `<section id="vargas"><h2>Divisional charts</h2>${table('', head, rows, 'matrix')}</section>`;
+}
+
+function renderLagnas(lagnas) {
+  const rows = lagnas.map(u => (u.lon == null ? [u.name, txt(u.unavailable || '—', 'wrap'), txt('—'), txt('—'), txt('—'), txt('—')]
+    : [u.name, txt(signDeg(u.lon)), txt(nak(u.nakshatra)), txt(pname(u.nakshatra.lord)), txt(String(u.house)), txt(String(u.bhava))]));
+  return `<section id="lagnas"><h2>Special lagnas</h2>${table('', ['Lagna', 'Sign and degree', 'Nakshatra and pada', 'Nakshatra lord', 'House', 'Bhava'], rows)}</section>`;
+}
+
+function renderKarakas(karakas) {
+  const rows = karakas.map(k => [k.karaka, txt(pname(k.planet)), txt(fmtDMS(k.advancement, 2))]);
+  return `<section id="karakas"><h2>Chara karakas</h2>${table('', ['Karaka', 'Graha', 'Advancement in sign'], rows)}</section>`;
 }

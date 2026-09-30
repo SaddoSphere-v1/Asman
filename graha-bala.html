@@ -4065,32 +4065,30 @@ function computeShadbala(chart, options = {}) {
 
 // src/upagrahas.js
 var UPAGRAHA_DEFAULTS = Object.freeze({
-  /** Point in the ruling planet's portion whose rising ascendant gives the upagraha: 'begin' | 'middle' | 'end'. JHora defaults. */
+  /** Point in the ruling planet's portion whose rising ascendant gives the upagraha: 'begin' | 'middle' | 'end'. Jagannatha Hora defaults. */
   kala: "middle",
   mrityu: "middle",
   ardhaprahara: "middle",
   yamaghantaka: "middle",
   gulika: "begin",
   mandi: "middle",
-  /** Night portion lords start from the lord of the 5th weekday; the 8th portion is lordless ('eighth').
-   *  'rotate' continues the 8-slot cycle so the lordless slot moves (PyJHora behaviour). */
-  lordlessPortion: "eighth"
+  /** Portion lords: 'cycle' — the fixed eight-slot cycle Sun, Moon, Mars, Mercury, Jupiter, Venus, Saturn, lordless, entered at the
+   *  weekday lord (day) or the fifth weekday's lord (night); this reproduces Jagannatha Hora. 'eighth' — the lordless slot always last. */
+  lordlessPortion: "cycle"
 });
 var WEEKDAY_ORDER = [SUN, MOON, MARS, MERCURY, JUPITER, VENUS, SATURN];
-function portionLords(weekday, isDay, mode = "eighth") {
+function portionLords(weekday, isDay, mode = "cycle") {
   const startDay = WEEKDAY_ORDER.indexOf(WEEKDAY_LORD[weekday]);
   const start = isDay ? startDay : (startDay + 4) % 7;
-  if (mode === "rotate") {
-    const cycle = [...WEEKDAY_ORDER, null];
-    const dayStart = startDay;
+  if (mode === "eighth") {
     const out2 = [];
-    const s = isDay ? dayStart : (dayStart + 4) % 8;
-    for (let i = 0; i < 8; i++) out2.push(cycle[(s + i) % 8]);
+    for (let i = 0; i < 7; i++) out2.push(WEEKDAY_ORDER[(start + i) % 7]);
+    out2.push(null);
     return out2;
   }
+  const cycle = [...WEEKDAY_ORDER, null];
   const out = [];
-  for (let i = 0; i < 7; i++) out.push(WEEKDAY_ORDER[(start + i) % 7]);
-  out.push(null);
+  for (let i = 0; i < 8; i++) out.push(cycle[(start + i) % 8]);
   return out;
 }
 var FRACTION = { begin: 0, middle: 0.5, end: 1 };
@@ -4146,13 +4144,6 @@ function computeUpagrahas(eph2, chart, options = {}) {
     }
   } else {
     for (const [name, lord, point] of kalavelas) out.push({ name, lon: null, lord, point, unavailable: "no sunrise/sunset at this latitude" });
-  }
-  if (!day.polar) {
-    const vighatis = (chart.jdUt - day.sunrise) * 86400 / 24;
-    const offset = { movable: 0, fixed: 240, dual: 120 }[signQuality(Math.floor(sun / 30))];
-    push("Pranapada", sun + offset + vighatis * 2, { basis: "Sun + 2\xB0 per vighati elapsed since sunrise" + (offset ? ` + ${offset}\xB0 (Sun in a ${offset === 240 ? "fixed" : "dual"} sign)` : " (Sun in a movable sign)") });
-  } else {
-    out.push({ name: "Pranapada", lon: null, unavailable: "no sunrise at this latitude" });
   }
   return out;
 }
@@ -4384,6 +4375,61 @@ function ashtakavargaFromChart(chart, options = {}) {
   return computeAshtakavarga(signs, SEVEN.map((p) => chart.planets[p].sign), options);
 }
 
+// src/lagnas.js
+var LAGNA_DEFAULTS = Object.freeze({
+  /** Sun used as the base of the time-based lagnas: 'birth' (Jagannatha Hora) | 'sunrise' (classical reading) */
+  sunBase: "birth"
+});
+var KARAKA_NAMES = ["Atmakaraka", "Amatyakaraka", "Bhratrikaraka", "Matrikaraka", "Pitrikaraka", "Putrakaraka", "Gnatikaraka", "Darakaraka"];
+var INDU_KALAS = [30, 16, 6, 8, 10, 12, 1];
+function computeSpecialLagnas(eph2, chart, options = {}) {
+  const opt = { ...LAGNA_DEFAULTS, ...options };
+  const P = chart.planets, day = chart.day;
+  const out = [];
+  const push = (name, lon, extra = {}) => {
+    const L = norm360(lon), sign = Math.floor(L / 30);
+    out.push({ name, lon: L, sign, deg: L - sign * 30, signLord: SIGN_LORD[sign], nakshatra: nakshatraOf(L), house: wholeSignHouse(L, chart.lagnaSign), bhava: bhavaOf(L, chart.bhavas), ...extra });
+  };
+  const unavailable = (name, why) => out.push({ name, lon: null, unavailable: why });
+  let horaLagnaSign = null;
+  if (!day.polar) {
+    const minutes = (chart.jdUt - day.sunrise) * 1440;
+    const base = opt.sunBase === "sunrise" ? eph2.calc(day.sunrise, SE.SUN, SE.FLG_SWIEPH | SE.FLG_SIDEREAL | (chart.options.truePositions ? SE.FLG_TRUEPOS : 0)).lon : P[SUN].lon;
+    const bhava = base + 0.25 * minutes, hora = base + 0.5 * minutes, ghati = base + 1.25 * minutes, vighati = base + 5 * minutes;
+    push("Bhava lagna", bhava);
+    push("Hora lagna", hora);
+    push("Ghati lagna", ghati);
+    push("Vighati lagna", vighati);
+    const offset = { movable: 0, fixed: 240, dual: 120 }[signQuality(P[SUN].sign)];
+    push("Pranapada lagna", vighati + offset);
+    horaLagnaSign = Math.floor(norm360(hora) / 30);
+  } else {
+    for (const n of ["Bhava lagna", "Hora lagna", "Ghati lagna", "Vighati lagna", "Pranapada lagna"]) unavailable(n, "no sunrise at this latitude");
+  }
+  if (horaLagnaSign != null) {
+    const L = chart.lagnaSign, H = horaLagnaSign;
+    const count = (s) => ODD_SIGN(s) ? s + 1 : 12 - s;
+    let n = ODD_SIGN(L) === ODD_SIGN(H) ? (count(L) + count(H)) % 12 : Math.abs(count(L) - count(H)) % 12;
+    if (n === 0) n = 12;
+    const sign = ODD_SIGN(L) ? n - 1 : (12 - n) % 12;
+    push("Varnada lagna", sign * 30 + chart.lagna.deg);
+  } else unavailable("Varnada lagna", "no sunrise at this latitude");
+  const nk = P[MOON].nakshatra;
+  push("Sree lagna", chart.asc + nk.degInNakshatra / (360 / 27) * 360);
+  const lord9L = SIGN_LORD[(chart.lagnaSign + 8) % 12], lord9M = SIGN_LORD[(P[MOON].sign + 8) % 12];
+  let k = (INDU_KALAS[lord9L] + INDU_KALAS[lord9M]) % 12;
+  if (k === 0) k = 12;
+  push("Indu lagna", (P[MOON].sign + k - 1) % 12 * 30 + P[MOON].deg);
+  push("Kunda lagna", chart.asc * 81);
+  push("Bhrigu Bindu", P[RAHU].lon + arc(P[RAHU].lon, P[MOON].lon) / 2);
+  return out;
+}
+function charaKarakas(chart) {
+  const rows = [0, 1, 2, 3, 4, 5, 6, 7].map((p) => ({ planet: p, advancement: p === RAHU ? 30 - chart.planets[p].deg : chart.planets[p].deg }));
+  rows.sort((a, b) => b.advancement - a.advancement);
+  return rows.map((r, i) => ({ karaka: KARAKA_NAMES[i], ...r }));
+}
+
 // src/tables.js
 function aspectMatrix(chart, special = "parasara") {
   const P = chart.planets;
@@ -4445,11 +4491,13 @@ function table(caption, head, rows, cls = "") {
 }
 var num = (x, d = 2) => ({ html: esc(d === 4 ? n4(x) : d === 2 ? n2(x) : n1(x)), cls: "num" });
 var txt = (s, cls) => ({ html: esc(s), cls });
-function renderAll({ chart, shadbala, upagrahas, avasthas, ashtakavarga, meta }) {
+function renderAll({ chart, shadbala, upagrahas, avasthas, ashtakavarga, lagnas, karakas, meta }) {
   const c = chart, off = c.input.utcOffset;
   const parts = [];
   parts.push(renderHeader(c));
   parts.push(renderPlacements(c));
+  if (lagnas) parts.push(renderLagnas(lagnas));
+  if (karakas) parts.push(renderKarakas(karakas));
   parts.push(renderDivisional(c));
   parts.push(renderDignities(c));
   parts.push(renderRelationships(c));
@@ -4599,6 +4647,14 @@ function renderDivisional(c) {
   const head = ["Chart", "Lagna", ...NINE.map(pname)];
   const rows = divisionalCharts(c).map((v) => [v.name, txt(SIGN_NAMES[v.lagna]), ...v.planets.map((s) => txt(SIGN_NAMES[s]))]);
   return `<section id="vargas"><h2>Divisional charts</h2>${table("", head, rows, "matrix")}</section>`;
+}
+function renderLagnas(lagnas) {
+  const rows = lagnas.map((u) => u.lon == null ? [u.name, txt(u.unavailable || "\u2014", "wrap"), txt("\u2014"), txt("\u2014"), txt("\u2014"), txt("\u2014")] : [u.name, txt(signDeg(u.lon)), txt(nak(u.nakshatra)), txt(pname(u.nakshatra.lord)), txt(String(u.house)), txt(String(u.bhava))]);
+  return `<section id="lagnas"><h2>Special lagnas</h2>${table("", ["Lagna", "Sign and degree", "Nakshatra and pada", "Nakshatra lord", "House", "Bhava"], rows)}</section>`;
+}
+function renderKarakas(karakas) {
+  const rows = karakas.map((k) => [k.karaka, txt(pname(k.planet)), txt(fmtDMS(k.advancement, 2))]);
+  return `<section id="karakas"><h2>Chara karakas</h2>${table("", ["Karaka", "Graha", "Advancement in sign"], rows)}</section>`;
 }
 
 // src/atlas.js
@@ -4808,7 +4864,9 @@ function compute() {
     const upagrahas = computeUpagrahas(eph, chart);
     const avasthas = computeAvasthas(chart);
     const ashtakavarga = ashtakavargaFromChart(chart);
-    $("results").innerHTML = renderAll({ chart, shadbala, upagrahas, avasthas, ashtakavarga, meta: { sweVersion: eph.version } });
+    const lagnas = computeSpecialLagnas(eph, chart);
+    const karakas = charaKarakas(chart);
+    $("results").innerHTML = renderAll({ chart, shadbala, upagrahas, avasthas, ashtakavarga, lagnas, karakas, meta: { sweVersion: eph.version } });
     try {
       localStorage.setItem("grahabala.last", JSON.stringify({ name: input.name, gender: input.gender, date: $("date").value, time: $("time").value, place }));
     } catch (e) {

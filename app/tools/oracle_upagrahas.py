@@ -33,7 +33,8 @@ def main(ephe):
                 wd = int(math.floor(rise + tz/24 + 1.5)) % 7
                 is_day = rise <= jd < sset
                 start = wd if is_day else (wd + 4) % 7
-                lords = [(start + i) % 7 for i in range(7)] + [None]
+                cycle = list(range(7)) + [None]  # Jagannatha Hora: fixed eight-slot cycle entered at the start lord
+                lords = [cycle[(start + i) % 8] for i in range(8)]
                 a, b = (rise, sset) if is_day else (sset, nxt)
                 part = (b - a) / 8
                 for name, (lord, f) in POINTS.items():

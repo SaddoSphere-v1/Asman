@@ -1,33 +1,31 @@
-// Upagrahas: five Sun-based aprakasha grahas, six kalavelas (Kala … Mandi) and Pranapada.
+// Upagrahas: five Sun-based aprakasha grahas and six kalavelas (Kala … Mandi). Pranapada lives with the special lagnas.
 import { norm360, arc } from './time.js';
-import { SUN, MOON, MARS, MERCURY, JUPITER, VENUS, SATURN, WEEKDAY_LORD, SIGN_LORD, signQuality } from './constants.js';
+import { SUN, MOON, MARS, MERCURY, JUPITER, VENUS, SATURN, WEEKDAY_LORD, SIGN_LORD } from './constants.js';
 import { nakshatraOf, wholeSignHouse, bhavaOf } from './chart.js';
 
 export const UPAGRAHA_DEFAULTS = Object.freeze({
-  /** Point in the ruling planet's portion whose rising ascendant gives the upagraha: 'begin' | 'middle' | 'end'. JHora defaults. */
+  /** Point in the ruling planet's portion whose rising ascendant gives the upagraha: 'begin' | 'middle' | 'end'. Jagannatha Hora defaults. */
   kala: 'middle', mrityu: 'middle', ardhaprahara: 'middle', yamaghantaka: 'middle', gulika: 'begin', mandi: 'middle',
-  /** Night portion lords start from the lord of the 5th weekday; the 8th portion is lordless ('eighth').
-   *  'rotate' continues the 8-slot cycle so the lordless slot moves (PyJHora behaviour). */
-  lordlessPortion: 'eighth',
+  /** Portion lords: 'cycle' — the fixed eight-slot cycle Sun, Moon, Mars, Mercury, Jupiter, Venus, Saturn, lordless, entered at the
+   *  weekday lord (day) or the fifth weekday's lord (night); this reproduces Jagannatha Hora. 'eighth' — the lordless slot always last. */
+  lordlessPortion: 'cycle',
 });
 
 const WEEKDAY_ORDER = [SUN, MOON, MARS, MERCURY, JUPITER, VENUS, SATURN];
 
-/** Lords of the eight portions of day or night for a weekday (0=Sunday). null = lordless. */
-export function portionLords(weekday, isDay, mode = 'eighth') {
+/** Lords of the eight portions of day or night for a weekday (0 = Sunday). null = lordless. */
+export function portionLords(weekday, isDay, mode = 'cycle') {
   const startDay = WEEKDAY_ORDER.indexOf(WEEKDAY_LORD[weekday]);
-  const start = isDay ? startDay : (startDay + 4) % 7; // night starts from the 5th weekday lord
-  if (mode === 'rotate') {
-    const cycle = [...WEEKDAY_ORDER, null];
-    const dayStart = startDay; // day sequence as an 8-cycle starting at the weekday lord
+  const start = isDay ? startDay : (startDay + 4) % 7; // night starts from the lord of the fifth weekday
+  if (mode === 'eighth') {
     const out = [];
-    const s = isDay ? dayStart : (dayStart + 4) % 8;
-    for (let i = 0; i < 8; i++) out.push(cycle[(s + i) % 8]);
+    for (let i = 0; i < 7; i++) out.push(WEEKDAY_ORDER[(start + i) % 7]);
+    out.push(null);
     return out;
   }
+  const cycle = [...WEEKDAY_ORDER, null];
   const out = [];
-  for (let i = 0; i < 7; i++) out.push(WEEKDAY_ORDER[(start + i) % 7]);
-  out.push(null);
+  for (let i = 0; i < 8; i++) out.push(cycle[(start + i) % 8]);
   return out;
 }
 
@@ -85,13 +83,5 @@ export function computeUpagrahas(eph, chart, options = {}) {
     for (const [name, lord, point] of kalavelas) out.push({ name, lon: null, lord, point, unavailable: 'no sunrise/sunset at this latitude' });
   }
 
-  // Pranapada: time from sunrise in vighatis / 15 → signs; i.e. 2° per vighati (24 s). Added to Sun (movable), Sun+240° (fixed), Sun+120° (dual).
-  if (!day.polar) {
-    const vighatis = (chart.jdUt - day.sunrise) * 86400 / 24;
-    const offset = { movable: 0, fixed: 240, dual: 120 }[signQuality(Math.floor(sun / 30))];
-    push('Pranapada', sun + offset + vighatis * 2, { basis: 'Sun + 2° per vighati elapsed since sunrise' + (offset ? ` + ${offset}° (Sun in a ${offset === 240 ? 'fixed' : 'dual'} sign)` : ' (Sun in a movable sign)') });
-  } else {
-    out.push({ name: 'Pranapada', lon: null, unavailable: 'no sunrise at this latitude' });
-  }
   return out;
 }

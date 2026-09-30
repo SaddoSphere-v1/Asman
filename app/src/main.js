@@ -10,6 +10,7 @@ import { computeShadbala } from './shadbala.js';
 import { computeUpagrahas } from './upagrahas.js';
 import { computeAvasthas } from './avasthas.js';
 import { ashtakavargaFromChart } from './ashtakavarga.js';
+import { computeSpecialLagnas, charaKarakas } from './lagnas.js';
 import { renderAll } from './render.js';
 import { zoneOffsetHours, formatOffset } from './time.js';
 import { loadAtlas, Atlas } from './atlas.js';
@@ -96,7 +97,9 @@ function compute() {
     const upagrahas = computeUpagrahas(eph, chart);
     const avasthas = computeAvasthas(chart);
     const ashtakavarga = ashtakavargaFromChart(chart);
-    $('results').innerHTML = renderAll({ chart, shadbala, upagrahas, avasthas, ashtakavarga, meta: { sweVersion: eph.version } });
+    const lagnas = computeSpecialLagnas(eph, chart);
+    const karakas = charaKarakas(chart);
+    $('results').innerHTML = renderAll({ chart, shadbala, upagrahas, avasthas, ashtakavarga, lagnas, karakas, meta: { sweVersion: eph.version } });
     try { localStorage.setItem('grahabala.last', JSON.stringify({ name: input.name, gender: input.gender, date: $('date').value, time: $('time').value, place })); } catch (e) { /* ignore */ }
   } catch (e) {
     status.textContent = e.message || String(e); status.classList.add('error');
