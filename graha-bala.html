@@ -2127,9 +2127,9 @@ async function createSwissEphModule(moduleArg = {}) {
     parent = typeof parent == "string" ? parent : FS.getPath(parent);
     var parts = path.split("/").reverse();
     while (parts.length) {
-      var part = parts.pop();
-      if (!part) continue;
-      var current = PATH.join2(parent, part);
+      var part2 = parts.pop();
+      if (!part2) continue;
+      var current = PATH.join2(parent, part2);
       try {
         FS.mkdir(current);
       } catch (e) {
@@ -3588,21 +3588,21 @@ function horaSign(lon) {
   return ODD_SIGN(s) ? first ? 4 : 3 : first ? 3 : 4;
 }
 function drekkanaSign(lon) {
-  const s = rasiOf(lon), part = Math.min(2, Math.floor(degInSign(lon) / 10));
-  return (s + 4 * part) % 12;
+  const s = rasiOf(lon), part2 = Math.min(2, Math.floor(degInSign(lon) / 10));
+  return (s + 4 * part2) % 12;
 }
 function saptamsaSign(lon) {
-  const s = rasiOf(lon), part = Math.min(6, Math.floor(degInSign(lon) * 7 / 30));
+  const s = rasiOf(lon), part2 = Math.min(6, Math.floor(degInSign(lon) * 7 / 30));
   const start = ODD_SIGN(s) ? s : (s + 6) % 12;
-  return (start + part) % 12;
+  return (start + part2) % 12;
 }
 function navamsaSign(lon) {
-  const s = rasiOf(lon), part = Math.min(8, Math.floor(degInSign(lon) * 9 / 30));
-  return (s * 9 + part) % 12;
+  const s = rasiOf(lon), part2 = Math.min(8, Math.floor(degInSign(lon) * 9 / 30));
+  return (s * 9 + part2) % 12;
 }
 function dwadasamsaSign(lon) {
-  const s = rasiOf(lon), part = Math.min(11, Math.floor(degInSign(lon) * 12 / 30));
-  return (s + part) % 12;
+  const s = rasiOf(lon), part2 = Math.min(11, Math.floor(degInSign(lon) * 12 / 30));
+  return (s + part2) % 12;
 }
 function trimsamsaSign(lon) {
   const s = rasiOf(lon), d = degInSign(lon);
@@ -3619,10 +3619,69 @@ function trimsamsaSign(lon) {
   if (d < 25) return 9;
   return 7;
 }
-var VARGA_FUNCS = { 1: rasiOf, 2: horaSign, 3: drekkanaSign, 7: saptamsaSign, 9: navamsaSign, 12: dwadasamsaSign, 30: trimsamsaSign };
+var part = (lon, D) => Math.min(D - 1, Math.floor(degInSign(lon) * D / 30));
+var quality = (s) => MOVABLE.includes(s) ? 0 : FIXED.includes(s) ? 1 : 2;
+var element = (s) => s % 4;
+var chaturthamsaSign = (lon) => (rasiOf(lon) + 3 * part(lon, 4)) % 12;
+var dasamsaSign = (lon) => {
+  const s = rasiOf(lon);
+  return ((ODD_SIGN(s) ? s : s + 8) + part(lon, 10)) % 12;
+};
+var shodasamsaSign = (lon) => ([0, 4, 8][quality(rasiOf(lon))] + part(lon, 16)) % 12;
+var vimsamsaSign = (lon) => ([0, 8, 4][quality(rasiOf(lon))] + part(lon, 20)) % 12;
+var chaturvimsamsaSign = (lon) => ((ODD_SIGN(rasiOf(lon)) ? 4 : 3) + part(lon, 24)) % 12;
+var nakshatramsaSign = (lon) => ([0, 3, 6, 9][element(rasiOf(lon))] + part(lon, 27)) % 12;
+var khavedamsaSign = (lon) => ((ODD_SIGN(rasiOf(lon)) ? 0 : 6) + part(lon, 40)) % 12;
+var akshavedamsaSign = (lon) => ([0, 4, 8][quality(rasiOf(lon))] + part(lon, 45)) % 12;
+var shashtiamsaSign = (lon) => (rasiOf(lon) + part(lon, 60)) % 12;
+var VARGA_FUNCS = {
+  1: rasiOf,
+  2: horaSign,
+  3: drekkanaSign,
+  4: chaturthamsaSign,
+  7: saptamsaSign,
+  9: navamsaSign,
+  10: dasamsaSign,
+  12: dwadasamsaSign,
+  16: shodasamsaSign,
+  20: vimsamsaSign,
+  24: chaturvimsamsaSign,
+  27: nakshatramsaSign,
+  30: trimsamsaSign,
+  40: khavedamsaSign,
+  45: akshavedamsaSign,
+  60: shashtiamsaSign
+};
+var VARGA_NAMES = {
+  1: "Rasi",
+  2: "Hora",
+  3: "Drekkana",
+  4: "Chaturthamsa",
+  7: "Saptamsa",
+  9: "Navamsa",
+  10: "Dasamsa",
+  12: "Dwadasamsa",
+  16: "Shodasamsa",
+  20: "Vimsamsa",
+  24: "Chaturvimsamsa",
+  27: "Nakshatramsa",
+  30: "Trimsamsa",
+  40: "Khavedamsa",
+  45: "Akshavedamsa",
+  60: "Shashtiamsa"
+};
 var SAPTAVARGA = [1, 2, 3, 7, 9, 12, 30];
+var SHODASAVARGA = [1, 2, 3, 4, 7, 9, 10, 12, 16, 20, 24, 27, 30, 40, 45, 60];
 function vargaSign(lon, D) {
   return VARGA_FUNCS[D](lon);
+}
+function divisionalCharts(chart) {
+  return SHODASAVARGA.map((D) => ({
+    D,
+    name: VARGA_NAMES[D],
+    lagna: vargaSign(chart.asc, D),
+    planets: chart.planets.map((p) => vargaSign(p.lon, D))
+  }));
 }
 
 // src/relations.js
@@ -3820,10 +3879,10 @@ function computeShadbala(chart, options = {}) {
     return [1, 4, 7, 10].includes(h) ? 60 : [2, 5, 8, 11].includes(h) ? 30 : 15;
   });
   const drekkana = SEVEN.map((p) => {
-    const part = Math.min(2, Math.floor(P[p].deg / 10));
+    const part2 = Math.min(2, Math.floor(P[p].deg / 10));
     const second = opt.drekkanaOrder === "bphs" ? [MOON, VENUS] : [MERCURY, SATURN];
     const want = [SUN, MARS, JUPITER].includes(p) ? 0 : second.includes(p) ? 1 : 2;
-    return part === want ? 15 : 0;
+    return part2 === want ? 15 : 0;
   });
   const sthana = SEVEN.map((i) => uchcha[i] + saptavargaja[i] + ojhayugma[i] + kendradi[i] + drekkana[i]);
   const weakHouse = { [SUN]: 4, [MARS]: 4, [MOON]: 10, [VENUS]: 10, [MERCURY]: 7, [JUPITER]: 7, [SATURN]: 1 };
@@ -4391,6 +4450,7 @@ function renderAll({ chart, shadbala, upagrahas, avasthas, ashtakavarga, meta })
   const parts = [];
   parts.push(renderHeader(c));
   parts.push(renderPlacements(c));
+  parts.push(renderDivisional(c));
   parts.push(renderDignities(c));
   parts.push(renderRelationships(c));
   parts.push(renderAspects(c, shadbala.options.drishtiSpecial));
@@ -4534,6 +4594,11 @@ function renderAspects(c, special) {
   const head = ["Aspecting graha", ...NINE.map(pname), "Lagna"];
   const rows = NINE.map((q) => [pname(q), ...m.rows[q].map((v) => v == null ? txt("\u2014") : num(v))]);
   return `<section id="aspects"><h2>Aspects</h2>${table("", head, rows, "matrix")}</section>`;
+}
+function renderDivisional(c) {
+  const head = ["Chart", "Lagna", ...NINE.map(pname)];
+  const rows = divisionalCharts(c).map((v) => [v.name, txt(SIGN_NAMES[v.lagna]), ...v.planets.map((s) => txt(SIGN_NAMES[s]))]);
+  return `<section id="vargas"><h2>Divisional charts</h2>${table("", head, rows, "matrix")}</section>`;
 }
 
 // src/atlas.js

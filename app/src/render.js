@@ -2,6 +2,7 @@
 import { fmtDMS, fmtHours, formatOffset, localHours } from './time.js';
 import { SEVEN, NINE, PLANET_NAMES, SIGN_NAMES, WEEKDAY_NAMES } from './constants.js';
 import { aspectMatrix, relationshipTables, dignityTable } from './tables.js';
+import { divisionalCharts } from './vargas.js';
 
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const n2 = (x) => (x == null || !Number.isFinite(x) ? '—' : (Math.round(x * 100) / 100).toFixed(2));
@@ -27,6 +28,7 @@ export function renderAll({ chart, shadbala, upagrahas, avasthas, ashtakavarga, 
   const parts = [];
   parts.push(renderHeader(c));
   parts.push(renderPlacements(c));
+  parts.push(renderDivisional(c));
   parts.push(renderDignities(c));
   parts.push(renderRelationships(c));
   parts.push(renderAspects(c, shadbala.options.drishtiSpecial));
@@ -164,4 +166,10 @@ function renderAspects(c, special) {
   const head = ['Aspecting graha', ...NINE.map(pname), 'Lagna'];
   const rows = NINE.map(q => [pname(q), ...m.rows[q].map(v => (v == null ? txt('—') : num(v)))]);
   return `<section id="aspects"><h2>Aspects</h2>${table('', head, rows, 'matrix')}</section>`;
+}
+
+function renderDivisional(c) {
+  const head = ['Chart', 'Lagna', ...NINE.map(pname)];
+  const rows = divisionalCharts(c).map(v => [v.name, txt(SIGN_NAMES[v.lagna]), ...v.planets.map(s => txt(SIGN_NAMES[s]))]);
+  return `<section id="vargas"><h2>Divisional charts</h2>${table('', head, rows, 'matrix')}</section>`;
 }
