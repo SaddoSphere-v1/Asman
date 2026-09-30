@@ -21,7 +21,7 @@ function table(caption, head, rows, cls = '') {
 const num = (x, d = 2) => ({ html: esc(d === 4 ? n4(x) : d === 2 ? n2(x) : n1(x)), cls: 'num' });
 const txt = (s, cls) => ({ html: esc(s), cls });
 
-export function renderAll({ chart, shadbala, upagrahas, avasthas, meta }) {
+export function renderAll({ chart, shadbala, upagrahas, avasthas, ashtakavarga, meta }) {
   const c = chart, off = c.input.utcOffset;
   const parts = [];
   parts.push(renderHeader(c));
@@ -29,6 +29,7 @@ export function renderAll({ chart, shadbala, upagrahas, avasthas, meta }) {
   parts.push(renderUpagrahas(c, upagrahas));
   parts.push(renderShadbala(c, shadbala));
   parts.push(renderIshtaKashta(shadbala));
+  if (ashtakavarga) parts.push(renderAshtakavarga(ashtakavarga));
   parts.push(renderAvasthas(avasthas));
   return parts.join('\n');
 }
@@ -108,4 +109,21 @@ function renderAvasthas(av) {
   const d = SEVEN.map(p => [pname(p), txt(av.deeptadi[p].states.join(', ') || '—')]);
   const l = SEVEN.map(p => [pname(p), txt(av.lajjitadi[p].states.join(', ') || '—')]);
   return `<section id="avasthas"><h2>Deeptadi avasthas</h2>${table('', ['Graha', 'Avasthas'], d)}<h2>Lajjitadi avasthas</h2>${table('', ['Graha', 'Avasthas'], l)}</section>`;
+}
+
+function renderAshtakavarga(av) {
+  const head = ['', ...SIGN_NAMES, 'Total'];
+  const intCell = (v) => ({ html: String(v), cls: 'num' });
+  const rowsOf = (m, withSav, savRow) => {
+    const rows = SEVEN.map(p => [pname(p), ...m[p].map(intCell), intCell(m[p].reduce((a, b) => a + b, 0))]);
+    if (withSav) rows.push([{ html: 'Sarvashtakavarga' }, ...savRow.map(intCell), intCell(savRow.reduce((a, b) => a + b, 0))]);
+    return rows;
+  };
+  let bav = table('', head, rowsOf(av.bav, true, av.sav), 'matrix');
+  bav = bav.replace('<tr><th scope="row">Sarvashtakavarga</th>', '<tr class="total"><th scope="row">Sarvashtakavarga</th>');
+  const trik = table('', head, rowsOf(av.trikona, false), 'matrix');
+  let eka = table('', head, rowsOf(av.ekadhipatya, true, av.savReduced), 'matrix');
+  eka = eka.replace('<tr><th scope="row">Sarvashtakavarga</th>', '<tr class="total"><th scope="row">Sarvashtakavarga</th>');
+  const pindas = table('', ['', 'Rasi pinda', 'Graha pinda', 'Shodhya pinda'], SEVEN.map(p => [pname(p), intCell(av.rasiPinda[p]), intCell(av.grahaPinda[p]), intCell(av.shodhyaPinda[p])]));
+  return `<section id="ashtakavarga"><h2>Ashtakavarga</h2>${bav}<h2>After Trikona shodhana</h2>${trik}<h2>After Ekadhipatya shodhana</h2>${eka}<h2>Shodhya pindas</h2>${pindas}</section>`;
 }

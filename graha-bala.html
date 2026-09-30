@@ -4228,6 +4228,99 @@ function computeAvasthas(chart, options = {}) {
   return { deeptadi, lajjitadi, options: opt, benefics: naturalBenefics, malefics: naturalMalefics };
 }
 
+// src/ashtakavarga.js
+var BINDU_TABLE = {
+  [SUN]: [[1, 2, 4, 7, 8, 9, 10, 11], [3, 6, 10, 11], [1, 2, 4, 7, 8, 9, 10, 11], [3, 5, 6, 9, 10, 11, 12], [5, 6, 9, 11], [6, 7, 12], [1, 2, 4, 7, 8, 9, 10, 11], [3, 4, 6, 10, 11, 12]],
+  [MOON]: [[3, 6, 7, 8, 10, 11], [1, 3, 6, 7, 10, 11], [2, 3, 5, 6, 9, 10, 11], [1, 3, 4, 5, 7, 8, 10, 11], [1, 4, 7, 8, 10, 11, 12], [3, 4, 5, 7, 9, 10, 11], [3, 5, 6, 11], [3, 6, 10, 11]],
+  [MARS]: [[3, 5, 6, 10, 11], [3, 6, 11], [1, 2, 4, 7, 8, 10, 11], [3, 5, 6, 11], [6, 10, 11, 12], [6, 8, 11, 12], [1, 4, 7, 8, 9, 10, 11], [1, 3, 6, 10, 11]],
+  [MERCURY]: [[5, 6, 9, 11, 12], [2, 4, 6, 8, 10, 11], [1, 2, 4, 7, 8, 9, 10, 11], [1, 3, 5, 6, 9, 10, 11, 12], [6, 8, 11, 12], [1, 2, 3, 4, 5, 8, 9, 11], [1, 2, 4, 7, 8, 9, 10, 11], [1, 2, 4, 6, 8, 10, 11]],
+  [JUPITER]: [[1, 2, 3, 4, 7, 8, 9, 10, 11], [2, 5, 7, 9, 11], [1, 2, 4, 7, 8, 10, 11], [1, 2, 4, 5, 6, 9, 10, 11], [1, 2, 3, 4, 7, 8, 10, 11], [2, 5, 6, 9, 10, 11], [3, 5, 6, 12], [1, 2, 4, 5, 6, 7, 9, 10, 11]],
+  [VENUS]: [[8, 11, 12], [1, 2, 3, 4, 5, 8, 9, 11, 12], [3, 4, 6, 9, 11, 12], [3, 5, 6, 9, 11], [5, 8, 9, 10, 11], [1, 2, 3, 4, 5, 8, 9, 10, 11], [3, 4, 5, 8, 9, 10, 11], [1, 2, 3, 4, 5, 8, 9, 11]],
+  [SATURN]: [[1, 2, 4, 7, 8, 10, 11], [3, 6, 11], [3, 5, 6, 10, 11, 12], [6, 8, 9, 10, 11, 12], [5, 6, 11, 12], [6, 11, 12], [3, 5, 6, 11], [1, 3, 4, 6, 10, 11]]
+};
+var EXPECTED_TOTALS = { [SUN]: 48, [MOON]: 49, [MARS]: 39, [MERCURY]: 54, [JUPITER]: 56, [VENUS]: 52, [SATURN]: 39 };
+var RASI_MANA = [7, 10, 8, 4, 10, 6, 7, 8, 9, 5, 11, 12];
+var GRAHA_MANA = [5, 5, 8, 5, 10, 7, 5];
+var LORD_PAIRS = [[0, 7], [2, 5], [8, 11], [1, 6], [9, 10]];
+var ASHTAKAVARGA_DEFAULTS = Object.freeze({
+  /** Ekadhipatya, one sign occupied and the empty sign holding more bindus: 'replace' the empty sign's count with the occupied sign's (Narasimha Rao, Raman) | 'subtract' the occupied sign's count from it (Maitreya) */
+  emptyHigher: "replace"
+});
+function computeAshtakavarga(signs, occupied, options = {}) {
+  const opt = { ...ASHTAKAVARGA_DEFAULTS, ...options };
+  const occ = new Set(occupied);
+  const bav = {}, prastara = {};
+  for (const p of SEVEN) {
+    const grid = [];
+    const row = new Array(12).fill(0);
+    BINDU_TABLE[p].forEach((houses, c) => {
+      const line = new Array(12).fill(0);
+      const from = signs[c];
+      for (const h of houses) {
+        const r = (from + h - 1) % 12;
+        line[r] = 1;
+        row[r] += 1;
+      }
+      grid.push(line);
+    });
+    bav[p] = row;
+    prastara[p] = grid;
+  }
+  const sav = new Array(12).fill(0);
+  for (const p of SEVEN) for (let r = 0; r < 12; r++) sav[r] += bav[p][r];
+  const trikona = {};
+  for (const p of SEVEN) {
+    const row = bav[p].slice();
+    for (let t = 0; t < 4; t++) {
+      const idx = [t, t + 4, t + 8];
+      const vals = idx.map((i) => row[i]);
+      if (vals.some((v) => v === 0)) continue;
+      const m = Math.min(...vals);
+      for (const i of idx) row[i] -= m;
+    }
+    trikona[p] = row;
+  }
+  const ekadhipatya = {};
+  for (const p of SEVEN) {
+    const row = trikona[p].slice();
+    for (const [a, b] of LORD_PAIRS) {
+      const va = row[a], vb = row[b];
+      if (va === 0 || vb === 0) continue;
+      const oa = occ.has(a), ob = occ.has(b);
+      if (oa && ob) continue;
+      if (!oa && !ob) {
+        if (va === vb) {
+          row[a] = 0;
+          row[b] = 0;
+        } else {
+          const m = Math.min(va, vb);
+          row[a] = m;
+          row[b] = m;
+        }
+        continue;
+      }
+      const [full, empty] = oa ? [a, b] : [b, a];
+      row[empty] = row[empty] < row[full] ? 0 : opt.emptyHigher === "subtract" ? row[empty] - row[full] : row[full];
+    }
+    ekadhipatya[p] = row;
+  }
+  const savReduced = new Array(12).fill(0);
+  for (const p of SEVEN) for (let r = 0; r < 12; r++) savReduced[r] += ekadhipatya[p][r];
+  const rasiPinda = {}, grahaPinda = {}, shodhyaPinda = {};
+  for (const p of SEVEN) {
+    rasiPinda[p] = ekadhipatya[p].reduce((s, v, r) => s + v * RASI_MANA[r], 0);
+    grahaPinda[p] = SEVEN.reduce((s, q) => s + ekadhipatya[p][signs[q]] * GRAHA_MANA[q], 0);
+    shodhyaPinda[p] = rasiPinda[p] + grahaPinda[p];
+  }
+  const totals = Object.fromEntries(SEVEN.map((p) => [p, bav[p].reduce((a, b) => a + b, 0)]));
+  return { bav, sav, prastara, trikona, ekadhipatya, savReduced, rasiPinda, grahaPinda, shodhyaPinda, totals, savTotal: sav.reduce((a, b) => a + b, 0) };
+}
+function ashtakavargaFromChart(chart, options = {}) {
+  const signs = SEVEN.map((p) => chart.planets[p].sign);
+  signs[7] = chart.lagnaSign;
+  return computeAshtakavarga(signs, SEVEN.map((p) => chart.planets[p].sign), options);
+}
+
 // src/render.js
 var esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
 var n2 = (x) => x == null || !Number.isFinite(x) ? "\u2014" : (Math.round(x * 100) / 100).toFixed(2);
@@ -4246,7 +4339,7 @@ function table(caption, head, rows, cls = "") {
 }
 var num = (x, d = 2) => ({ html: esc(d === 4 ? n4(x) : d === 2 ? n2(x) : n1(x)), cls: "num" });
 var txt = (s, cls) => ({ html: esc(s), cls });
-function renderAll({ chart, shadbala, upagrahas, avasthas, meta }) {
+function renderAll({ chart, shadbala, upagrahas, avasthas, ashtakavarga, meta }) {
   const c = chart, off = c.input.utcOffset;
   const parts = [];
   parts.push(renderHeader(c));
@@ -4254,6 +4347,7 @@ function renderAll({ chart, shadbala, upagrahas, avasthas, meta }) {
   parts.push(renderUpagrahas(c, upagrahas));
   parts.push(renderShadbala(c, shadbala));
   parts.push(renderIshtaKashta(shadbala));
+  if (ashtakavarga) parts.push(renderAshtakavarga(ashtakavarga));
   parts.push(renderAvasthas(avasthas));
   return parts.join("\n");
 }
@@ -4339,6 +4433,22 @@ function renderAvasthas(av) {
   const d = SEVEN.map((p) => [pname(p), txt(av.deeptadi[p].states.join(", ") || "\u2014")]);
   const l = SEVEN.map((p) => [pname(p), txt(av.lajjitadi[p].states.join(", ") || "\u2014")]);
   return `<section id="avasthas"><h2>Deeptadi avasthas</h2>${table("", ["Graha", "Avasthas"], d)}<h2>Lajjitadi avasthas</h2>${table("", ["Graha", "Avasthas"], l)}</section>`;
+}
+function renderAshtakavarga(av) {
+  const head = ["", ...SIGN_NAMES, "Total"];
+  const intCell = (v) => ({ html: String(v), cls: "num" });
+  const rowsOf = (m, withSav, savRow) => {
+    const rows = SEVEN.map((p) => [pname(p), ...m[p].map(intCell), intCell(m[p].reduce((a, b) => a + b, 0))]);
+    if (withSav) rows.push([{ html: "Sarvashtakavarga" }, ...savRow.map(intCell), intCell(savRow.reduce((a, b) => a + b, 0))]);
+    return rows;
+  };
+  let bav = table("", head, rowsOf(av.bav, true, av.sav), "matrix");
+  bav = bav.replace('<tr><th scope="row">Sarvashtakavarga</th>', '<tr class="total"><th scope="row">Sarvashtakavarga</th>');
+  const trik = table("", head, rowsOf(av.trikona, false), "matrix");
+  let eka = table("", head, rowsOf(av.ekadhipatya, true, av.savReduced), "matrix");
+  eka = eka.replace('<tr><th scope="row">Sarvashtakavarga</th>', '<tr class="total"><th scope="row">Sarvashtakavarga</th>');
+  const pindas = table("", ["", "Rasi pinda", "Graha pinda", "Shodhya pinda"], SEVEN.map((p) => [pname(p), intCell(av.rasiPinda[p]), intCell(av.grahaPinda[p]), intCell(av.shodhyaPinda[p])]));
+  return `<section id="ashtakavarga"><h2>Ashtakavarga</h2>${bav}<h2>After Trikona shodhana</h2>${trik}<h2>After Ekadhipatya shodhana</h2>${eka}<h2>Shodhya pindas</h2>${pindas}</section>`;
 }
 
 // src/atlas.js
@@ -4547,7 +4657,8 @@ function compute() {
     const shadbala = computeShadbala(chart);
     const upagrahas = computeUpagrahas(eph, chart);
     const avasthas = computeAvasthas(chart);
-    $("results").innerHTML = renderAll({ chart, shadbala, upagrahas, avasthas, meta: { sweVersion: eph.version } });
+    const ashtakavarga = ashtakavargaFromChart(chart);
+    $("results").innerHTML = renderAll({ chart, shadbala, upagrahas, avasthas, ashtakavarga, meta: { sweVersion: eph.version } });
     try {
       localStorage.setItem("grahabala.last", JSON.stringify({ name: input.name, gender: input.gender, date: $("date").value, time: $("time").value, place }));
     } catch (e) {
