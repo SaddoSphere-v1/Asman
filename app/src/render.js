@@ -70,15 +70,19 @@ function renderUpagrahas(c, ups) {
   return `<section id="upagrahas"><h2>Upagrahas</h2>${table('', ['Upagraha', 'Sign and degree', 'Nakshatra and pada', 'Nakshatra lord', 'House', 'Bhava'], rows)}</section>`;
 }
 
-function renderShadbala(c, sb) {
+const TARA = [2, 3, 4, 5, 6];     // Mars, Mercury, Jupiter, Venus, Saturn
+const LUMINARIES = [0, 1];        // Sun, Moon
+
+function shadbalaTable(sb, planets, withYuddha) {
   const C = sb.components;
-  const head = ['Component', ...SEVEN.map(p => pname(p))];
-  const row = (label, arr, cls = '') => [{ html: esc(label) }, ...arr.map(v => ({ html: esc(n2(v)), cls: 'num ' + cls }))];
+  const head = ['', ...planets.map(pname)];
+  const row = (label, arr, cls = '') => [{ html: esc(label) }, ...planets.map(p => ({ html: esc(n2(arr[p])), cls: 'num ' + cls }))];
   const rows = [
     row('Uchcha bala', C.uchcha), row('Saptavargaja bala', C.saptavargaja), row('Ojhayugma bala', C.ojhayugma), row('Kendradi bala', C.kendradi), row('Drekkana bala', C.drekkana),
     row('Sthana bala', C.sthana, 'sub'),
     row('Dig bala', C.dig, 'sub'),
-    row('Natonnata bala', C.natonnata), row('Paksha bala', C.paksha), row('Tribhaga bala', C.tribhaga), row('Abda bala', C.abda), row('Masa bala', C.masa), row('Vara bala', C.vara), row('Hora bala', C.hora), row('Ayana bala', C.ayana), row('Yuddha bala', C.yuddha),
+    row('Natonnata bala', C.natonnata), row('Paksha bala', C.paksha), row('Tribhaga bala', C.tribhaga), row('Abda bala', C.abda), row('Masa bala', C.masa), row('Vara bala', C.vara), row('Hora bala', C.hora), row('Ayana bala', C.ayana),
+    ...(withYuddha ? [row('Yuddha bala', C.yuddha)] : []),
     row('Kala bala', C.kala, 'sub'),
     row('Chesta bala', C.chesta, 'sub'),
     row('Naisargika bala', C.naisargika, 'sub'),
@@ -87,22 +91,29 @@ function renderShadbala(c, sb) {
     row('Shadbala (rupas)', C.rupas, 'total'),
     row('Required (rupas)', C.required),
     row('Ratio', C.ratio, 'total'),
-    [{ html: 'Rank' }, ...C.rank.map(v => ({ html: String(v), cls: 'num' }))],
+    [{ html: 'Rank' }, ...planets.map(p => ({ html: String(C.rank[p]), cls: 'num' }))],
   ];
-  const groups = { 'Sthana bala': 'sthana', 'Dig bala': 'dig', 'Kala bala': 'kala', 'Chesta bala': 'chesta', 'Naisargika bala': 'nais', 'Drik bala': 'drik' };
   let html = table('', head, rows, 'matrix');
   html = html.replace(/<tr><th scope="row">(Sthana bala|Dig bala|Kala bala|Chesta bala|Naisargika bala|Drik bala|Shadbala \(shashtiamsas\)|Shadbala \(rupas\)|Ratio)<\/th>/g, (m, l) => `<tr class="${l.startsWith('Shadbala') || l === 'Ratio' ? 'total' : 'sub'}"><th scope="row">${l}</th>`);
-  return `<section id="shadbala"><h2>Shadbala</h2>${html}</section>`;
+  return html;
+}
+
+function renderShadbala(c, sb) {
+  return `<section id="shadbala"><h2>Shadbala</h2>${shadbalaTable(sb, TARA, true)}<h2>Shadbala of the Sun and Moon</h2>${shadbalaTable(sb, LUMINARIES, false)}</section>`;
+}
+
+function ishtaTable(sb, planets) {
+  const ik = sb.ishtaKashta;
+  const head = ['', ...planets.map(pname)];
+  const rows = [
+    ['Ishta phala', ...planets.map(p => num(ik.ishta[p]))],
+    ['Kashta phala', ...planets.map(p => num(ik.kashta[p]))],
+  ];
+  return table('', head, rows, 'matrix');
 }
 
 function renderIshtaKashta(sb) {
-  const ik = sb.ishtaKashta;
-  const head = ['', ...SEVEN.map(pname)];
-  const rows = [
-    ['Ishta phala', ...ik.ishta.map(v => num(v))],
-    ['Kashta phala', ...ik.kashta.map(v => num(v))],
-  ];
-  return `<section id="ishta"><h2>Ishta / Kashta phala</h2>${table('', head, rows, 'matrix')}</section>`;
+  return `<section id="ishta"><h2>Ishta / Kashta phala</h2>${ishtaTable(sb, TARA)}<h2>Ishta / Kashta phala of the Sun and Moon</h2>${ishtaTable(sb, LUMINARIES)}</section>`;
 }
 
 function renderAvasthas(av) {
