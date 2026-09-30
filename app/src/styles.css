@@ -47,14 +47,14 @@ figure.tbl { margin: 0 0 14px; overflow-x: auto; border: 1px solid var(--line); 
 table { border-collapse: collapse; width: 100%; font-variant-numeric: tabular-nums; }
 caption { text-align: left; padding: 8px 10px; color: var(--muted); font-size: 12.5px; caption-side: top; border-bottom: 1px solid var(--line-soft); }
 th, td { padding: 5px 10px; border-bottom: 1px solid var(--line-soft); text-align: left; white-space: nowrap; vertical-align: top; }
-thead th { font-weight: 600; color: var(--muted); font-size: 12.5px; background: var(--panel); position: sticky; top: 0; }
+thead th { font-weight: 600; color: var(--muted); font-size: 12.5px; background: var(--panel); position: sticky; top: 0; white-space: normal; min-width: 5ch; }
 tbody th[scope="row"] { font-weight: 500; }
 td.num { text-align: right; font-family: var(--mono); font-size: 13px; }
 tbody tr:last-child th, tbody tr:last-child td { border-bottom: none; }
 figure.matrix tbody th[scope="row"] { position: sticky; left: 0; background: var(--panel); }
 tr.sub th, tr.sub td { background: var(--sub); font-weight: 600; }
 tr.total th, tr.total td { background: var(--total); font-weight: 700; }
-td.status { white-space: normal; max-width: 220px; }
+td.wrap { white-space: normal; min-width: 14ch; max-width: 34ch; }
 p.note { color: var(--muted); font-size: 12.5px; margin: 6px 2px 0; }
 section#details details summary { cursor: pointer; color: var(--muted); margin-bottom: 8px; }
 footer { margin-top: 36px; color: var(--muted); font-size: 12px; line-height: 1.5; }

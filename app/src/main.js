@@ -16,24 +16,24 @@ const $ = (id) => document.getElementById(id);
 
 /** Options exposed in the UI: [group, key, label, choices]. */
 const OPTION_SPECS = [
-  ['chart', 'houseSystem', 'Bhava (house) system', { sripati: 'Sripati (JHora default)', equal: 'Equal, lagna mid-house', kp: 'KP / Placidus cusps' }],
+  ['chart', 'houseSystem', 'Bhava (house) system', { sripati: 'Sripati (Jagannatha Hora default)', equal: 'Equal, lagna in the middle of the first house', kp: 'Krishnamurti Paddhati: Placidus cusps as house starts' }],
   ['chart', 'warWinner', 'Graha yuddha winner', { lowerLongitude: 'Lower longitude (Raman)', north: 'Northern latitude', higherLongitude: 'Higher longitude' }],
-  ['chart', 'truePositions', 'Planet positions', { true: 'Geometric / true (JHora)', false: 'Apparent' }],
-  ['shadbala', 'natonnataReference', 'Natonnata time basis', { lat: 'Local apparent time (Raman)', lmt: 'Local mean time', apparent: 'Midpoint of sunset & sunrise' }],
-  ['shadbala', 'horaMethod', 'Hora bala horas', { equalHours: '60-minute horas from sunrise (Raman)', unequal: 'Day/12 and night/12' }],
-  ['shadbala', 'declination', 'Ayana bala kranti', { 'ss-table': 'Surya Siddhanta table on sayana longitude (Raman)', ecliptic: 'sin δ = sin ε · sin λ', true: 'True declination (Swiss Ephemeris)' }],
-  ['shadbala', 'ahargana', 'Abda/Masa lords', { raman: 'Raman condensed ahargana (1827 epoch)', kali: 'Kali-yuga ahargana' }],
+  ['chart', 'truePositions', 'Planet positions', { true: 'Geometric, true positions (Jagannatha Hora)', false: 'Apparent positions' }],
+  ['shadbala', 'natonnataReference', 'Natonnata time basis', { lat: 'Local apparent time (Raman)', lmt: 'Local mean time', apparent: 'Midpoint of sunset and sunrise' }],
+  ['shadbala', 'horaMethod', 'Hora bala horas', { equalHours: 'Sixty-minute horas from sunrise (Raman)', unequal: 'Day divided by twelve and night divided by twelve' }],
+  ['shadbala', 'declination', 'Ayana bala kranti', { 'ss-table': 'Surya Siddhanta table on the sayana longitude (Raman)', ecliptic: 'Spherical formula from the sayana longitude', true: 'True declination (Swiss Ephemeris)' }],
+  ['shadbala', 'ahargana', 'Abda and Masa lords', { raman: 'Raman condensed ahargana (1827 epoch)', kali: 'Kali-yuga ahargana' }],
   ['shadbala', 'chestaMeans', 'Chesta mean longitudes', { raman: 'Raman 1900 Ujjain elements', meeus: 'Meeus modern mean elements' }],
-  ['shadbala', 'drishtiSpecial', 'Sputa drishti special aspects', { parasara: 'Parasara formulas (JHora default)', raman: 'Raman additive +15/+30/+45' }],
-  ['shadbala', 'drekkanaOrder', 'Drekkana bala order', { raman: 'Me/Sa 2nd, Mo/Ve 3rd (Raman)', bphs: 'Mo/Ve 2nd, Me/Sa 3rd' }],
-  ['shadbala', 'moolatrikonaRasi', 'Saptavargaja moolatrikona (rasi)', { sign: 'Whole sign (Raman)', degrees: 'Degree range only' }],
-  ['shadbala', 'luminaryChestaInTotal', "Sun/Moon Chesta in total", { false: 'Shown, not added (Raman)', true: 'Added to total' }],
-  ['shadbala', 'requiredMinima', 'Required minima', { bphs: 'BPHS (Sun 390)', raman: 'Raman (Sun 300)' }],
-  ['upagraha', 'gulika', 'Gulika point in Saturn\'s part', { begin: 'Beginning (JHora)', middle: 'Middle', end: 'End' }],
-  ['upagraha', 'mandi', 'Mandi point in Saturn\'s part', { middle: 'Middle (JHora)', begin: 'Beginning', end: 'End' }],
-  ['avastha', 'relation', 'Avastha relationships', { compound: 'Compound / panchadha (PVR)', natural: 'Natural only' }],
-  ['avastha', 'khala', 'Khala rule', { maleficSign: "Malefic's sign (PVR book)", adhisatru: "Great enemy's sign (Santhanam)" }],
-  ['avastha', 'nodesAspect', 'Rahu/Ketu aspect (7th) in avasthas', { true: 'Yes', false: 'No' }],
+  ['shadbala', 'drishtiSpecial', 'Sputa drishti special aspects', { parasara: 'Parasara formulas (Jagannatha Hora default)', raman: 'Raman additive 15, 30, 45' }],
+  ['shadbala', 'drekkanaOrder', 'Drekkana bala order', { raman: 'Mercury and Saturn second, Moon and Venus third (Raman)', bphs: 'Moon and Venus second, Mercury and Saturn third (Brihat Parashara Hora Shastra)' }],
+  ['shadbala', 'moolatrikonaRasi', 'Saptavargaja moolatrikona in the rasi chart', { sign: 'Whole sign (Raman)', degrees: 'Degree range only' }],
+  ['shadbala', 'luminaryChestaInTotal', "Sun/Moon Chesta in total", { false: 'Shown, not added again (Raman)', true: 'Added to the total' }],
+  ['shadbala', 'requiredMinima', 'Required minima', { bphs: 'Brihat Parashara Hora Shastra (Sun 390)', raman: 'Raman (Sun 300)' }],
+  ['upagraha', 'gulika', 'Gulika point in Saturn\'s part', { begin: 'Beginning (Jagannatha Hora)', middle: 'Middle', end: 'End' }],
+  ['upagraha', 'mandi', 'Mandi point in Saturn\'s part', { middle: 'Middle (Jagannatha Hora)', begin: 'Beginning', end: 'End' }],
+  ['avastha', 'relation', 'Avastha relationships', { compound: 'Compound, panchadha (Narasimha Rao)', natural: 'Natural only' }],
+  ['avastha', 'khala', 'Khala rule', { maleficSign: "Malefic's sign (Narasimha Rao)", adhisatru: "Great enemy's sign (Santhanam)" }],
+  ['avastha', 'nodesAspect', 'Rahu and Ketu cast a seventh-house aspect in avasthas', { true: 'Yes', false: 'No' }],
 ];
 const DEFAULTS = { chart: DEFAULT_OPTIONS, shadbala: SHADBALA_DEFAULTS, upagraha: UPAGRAHA_DEFAULTS, avastha: AVASTHA_DEFAULTS };
 
@@ -67,7 +67,7 @@ function buildZoneSelect() {
   const list = zones.length ? zones : ['UTC', local];
   if (!list.includes('UTC')) list.unshift('UTC');
   if (!list.includes(local)) list.push(local);
-  for (const z of list) { const o = document.createElement('option'); o.value = z; o.textContent = z; sel.appendChild(o); }
+  for (const z of list) { const o = document.createElement('option'); o.value = z; o.textContent = z === 'UTC' ? 'Greenwich (Universal Time)' : z; sel.appendChild(o); }
   sel.value = local;
 }
 
@@ -92,7 +92,7 @@ function currentOffset() {
 }
 function updateTzInfo() {
   const { offset, source } = currentOffset();
-  $('tzinfo').textContent = `UTC${formatOffset(offset)}${source === 'manual' ? ' (override)' : ''}`;
+  $('tzinfo').textContent = `${formatOffset(offset)} from Greenwich${source === 'manual' ? ' (override)' : ''}`;
 }
 
 function readInput() {
@@ -137,7 +137,7 @@ function compute() {
   try {
     const input = readInput();
     if (!Number.isFinite(input.lat) || !Number.isFinite(input.lon) || !input.year) throw new Error('Please fill in date, time, latitude and longitude.');
-    if (input.year < 1800 || input.year > 2399) status.textContent = 'Outside 1800–2399: using the built-in Moshier theory instead of the data files.';
+    if (input.year < 1800 || input.year > 2399) status.textContent = 'Outside 1800 to 2399: using the built-in Moshier theory instead of the data files.';
     const opts = readOptions();
     const chart = computeChart(eph, input, opts.chart);
     const shadbala = computeShadbala(chart, opts.shadbala);

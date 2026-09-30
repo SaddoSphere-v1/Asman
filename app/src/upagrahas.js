@@ -89,7 +89,7 @@ export function computeUpagrahas(eph, chart, options = {}) {
   if (!day.polar) {
     const vighatis = (chart.jdUt - day.sunrise) * 86400 / 24;
     const offset = { movable: 0, fixed: 240, dual: 120 }[signQuality(Math.floor(sun / 30))];
-    push('Pranapada', sun + offset + vighatis * 2, { basis: 'Sun + ishta-vighatis×2°' + (offset ? ` + ${offset}°` : '') });
+    push('Pranapada', sun + offset + vighatis * 2, { basis: 'Sun + 2° per vighati elapsed since sunrise' + (offset ? ` + ${offset}° (Sun in a ${offset === 240 ? 'fixed' : 'dual'} sign)` : ' (Sun in a movable sign)') });
   } else {
     out.push({ name: 'Pranapada', lon: null, unavailable: 'no sunrise at this latitude' });
   }
