@@ -4,7 +4,7 @@ import { SEVEN, NINE, PLANET_NAMES, SIGN_NAMES, WEEKDAY_NAMES } from './constant
 import { aspectMatrix, relationshipTables, dignityTable } from './tables.js';
 import { divisionalCharts, VARGA_NAMES } from './vargas.js';
 import { specialLagnaTables } from './lagnatables.js';
-import { computeArgala, argalaOn, ARGALA_HOUSES } from './argala.js';
+import { computeArgala, ARGALA_HOUSES } from './argala.js';
 import { computeArudhas, bhavaArudhas, signAspects, countSigns, ARUDHA_NAMES } from './arudhas.js';
 import { nakshatraOf, wholeSignHouse, bhavaOf } from './chart.js';
 
@@ -222,7 +222,6 @@ function renderLagnas(c, lagnas, ashtakavarga, special) {
   html += `<h2>Sign lords of the special lagnas</h2>${table('', ['Lagna', 'Sign lord', 'Placement', 'House from the lagna', 'Dignity'], avail.map(t => [withSign(t), ...lordCells(t.lord)]))}`;
   html += `<h2>Nakshatra lords of the special lagnas</h2>${table('', ['Lagna', 'Nakshatra lord', 'Placement', 'House from the lagna', 'Dignity'], avail.map(t => [withSign(t), ...lordCells(t.nakshatraLord)]))}`;
   html += `<h2>Aspects on the special lagnas</h2>${table('', [...grahaHead, 'Total'], avail.map(t => [withSign(t), ...t.aspects.map(v => num(v)), num(t.aspectTotal)]), 'matrix')}`;
-  html += `<h2>Argala on the special lagnas</h2>${table('', ['Lagna', 'Second house', 'Fourth house', 'Eleventh house', 'Fifth house', 'Third house (malefics)'], avail.map(t => [withSign(t), ...ARGALA_HOUSES.map(a => argalaCell(t.argala[a.key])), argalaCell(t.argala.vipareeta)]))}`;
   if (ashtakavarga) html += `<h2>Ashtakavarga bindus of the special lagnas</h2>${table('', ['Lagna', ...SEVEN.map(pname), 'Total', 'After shodhana'], avail.map(t => [withSign(t), ...t.bindus.perPlanet.map(b => txt(String(b))), txt(String(t.bindus.total)), txt(String(t.bindus.reduced))]), 'matrix')}`;
   html += `<h2>Special lagnas in the divisional charts</h2>${table('', ['Chart', ...avail.map(t => t.name)], avail[0].vargas.map((v, k) => [VARGA_NAMES[v.D], ...avail.map(t => txt(SIGN_NAMES[t.vargas[k].sign]))]), 'matrix')}`;
   return html + '</section>';
@@ -236,7 +235,6 @@ function renderArudhas(c, dv) {
   const lrows = A.bhava.map((a, i) => { const lon = A.longitudes[i], nk = nakshatraOf(lon); return [a.name, txt(signDeg(lon)), txt(nak(nk)), txt(pname(nk.lord)), txt(String(wholeSignHouse(lon, c.lagnaSign))), txt(String(bhavaOf(lon, c.bhavas)))]; });
   html += `<h2>Padamsa (arudha longitudes)</h2>${table('', ['Arudha', 'Sign and degree', 'Nakshatra and pada', 'Nakshatra lord', 'House', 'Bhava'], lrows)}`;
   html += `<h2>Houses of the grahas from the arudha padas</h2>${table('', ['Arudha', ...NINE.map(pname)], A.bhava.map(a => [withSign(a), ...NINE.map(p => txt(String(countSigns(a.sign, c.planets[p].sign))))]), 'matrix')}`;
-  html += `<h2>Argala on the arudha padas</h2>${table('', ['Arudha', 'Second house', 'Fourth house', 'Eleventh house', 'Fifth house', 'Third house (malefics)'], A.bhava.map(a => { const g = argalaOn(c, a.sign); return [withSign(a), ...ARGALA_HOUSES.map(h => argalaCell(g[h.key])), argalaCell(g.vipareeta)]; }))}`;
   html += `<h2>Graha arudhas</h2>${table('', ['Graha', 'Sign owned', 'Arudha sign', 'House from Lagna', 'Grahas in the sign', 'Grahas aspecting the sign'], A.graha.map(g => [pname(g.planet), txt(SIGN_NAMES[g.ownSign]), txt(SIGN_NAMES[g.sign]), txt(String(g.house)), txt(grahaList(g.occupants), 'wrap'), txt(grahaList(g.aspecting), 'wrap')]))}`;
   const inVargas = dv.charts.map(v => { const ar = bhavaArudhas(vargaPositions(v)); return [v.name, ...ar.map(a => txt(SIGN_NAMES[a.sign]))]; });
   html += `<h2>Arudha padas in the divisional charts</h2>${table('', ['Chart', ...ARUDHA_NAMES.slice(0, 6)], inVargas.map(r => r.slice(0, 7)), 'matrix')}`;
@@ -254,7 +252,7 @@ function argalaCell(a) {
 
 function renderArgala(c) {
   const ag = computeArgala(c);
-  const head = ['Reference', 'Second house', 'Fourth house', 'Eleventh house', 'Fifth house', 'Third house (malefics)'];
-  const rows = [...ag.houses, ...ag.planets].map(r => [`${r.label} · ${SIGN_NAMES[r.sign]}`, ...ARGALA_HOUSES.map(a => argalaCell(r.argala[a.key])), argalaCell(r.argala.vipareeta)]);
+  const head = ['House', 'Second house', 'Fourth house', 'Eleventh house', 'Fifth house', 'Third house (malefics)'];
+  const rows = ag.houses.map(r => [`${r.label} · ${SIGN_NAMES[r.sign]}`, ...ARGALA_HOUSES.map(a => argalaCell(r.argala[a.key])), argalaCell(r.argala.vipareeta)]);
   return `<section id="argala"><h2>Argala</h2>${table('', head, rows)}</section>`;
 }
