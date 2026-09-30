@@ -3580,6 +3580,48 @@ function computeChart(eph2, input, options = {}) {
   };
 }
 
+// src/relations.js
+var naturalRelation = (p, q) => NATURAL_RELATION[p][q];
+function temporalFriend(signP, signQ) {
+  const h = ((signQ - signP) % 12 + 12) % 12 + 1;
+  return [2, 3, 4, 10, 11, 12].includes(h);
+}
+function compoundRelation(p, q, signs) {
+  const nat = naturalRelation(p, q);
+  const tf = temporalFriend(signs[p], signs[q]);
+  if (nat === "F") return tf ? "adhimitra" : "sama";
+  if (nat === "N") return tf ? "mitra" : "satru";
+  return tf ? "sama" : "adhisatru";
+}
+function compoundMatrix(signs) {
+  const m = {};
+  for (const p of SEVEN) {
+    m[p] = {};
+    for (const q of SEVEN) if (p !== q) m[p][q] = compoundRelation(p, q, signs);
+  }
+  return m;
+}
+var isOwnSign = (p, sign) => p <= 6 && OWN_SIGNS[p].includes(sign);
+var isExaltationSign = (p, sign) => p <= 6 && EXALTATION_SIGN[p] === sign;
+var isDebilitationSign = (p, sign) => p <= 6 && DEBILITATION_SIGN[p] === sign;
+function isMoolatrikona(p, sign, deg = null) {
+  if (p > 6) return false;
+  const [s, from, to] = MOOLATRIKONA[p];
+  if (sign !== s) return false;
+  if (deg == null) return true;
+  return deg >= from && deg < to;
+}
+function dignity(p, sign, deg, relationMatrix) {
+  if (isExaltationSign(p, sign)) return "exalted";
+  if (isMoolatrikona(p, sign, deg)) return "moolatrikona";
+  if (isOwnSign(p, sign)) return "own";
+  if (isDebilitationSign(p, sign)) return "debilitated";
+  const lord = SIGN_LORD[sign];
+  if (relationMatrix) return relationMatrix[p][lord];
+  const n = naturalRelation(p, lord);
+  return n === "F" ? "friend" : n === "N" ? "neutral" : "enemy";
+}
+
 // src/vargas.js
 var rasiOf = (lon) => Math.floor(norm360(lon) / 30) % 12;
 var degInSign = (lon) => norm360(lon) % 30;
@@ -3676,45 +3718,67 @@ var SHODASAVARGA = [1, 2, 3, 4, 7, 9, 10, 12, 16, 20, 24, 27, 30, 40, 45, 60];
 function vargaSign(lon, D) {
   return VARGA_FUNCS[D](lon);
 }
-function divisionalCharts(chart) {
-  return SHODASAVARGA.map((D) => ({
-    D,
-    name: VARGA_NAMES[D],
-    lagna: vargaSign(chart.asc, D),
-    planets: chart.planets.map((p) => vargaSign(p.lon, D))
-  }));
-}
-
-// src/relations.js
-var naturalRelation = (p, q) => NATURAL_RELATION[p][q];
-function temporalFriend(signP, signQ) {
-  const h = ((signQ - signP) % 12 + 12) % 12 + 1;
-  return [2, 3, 4, 10, 11, 12].includes(h);
-}
-function compoundRelation(p, q, signs) {
-  const nat = naturalRelation(p, q);
-  const tf = temporalFriend(signs[p], signs[q]);
-  if (nat === "F") return tf ? "adhimitra" : "sama";
-  if (nat === "N") return tf ? "mitra" : "satru";
-  return tf ? "sama" : "adhisatru";
-}
-function compoundMatrix(signs) {
-  const m = {};
-  for (const p of SEVEN) {
-    m[p] = {};
-    for (const q of SEVEN) if (p !== q) m[p][q] = compoundRelation(p, q, signs);
+function vargaDegree(lon, D) {
+  const d = degInSign(lon), s = rasiOf(lon);
+  if (D === 1) return d;
+  if (D === 2) return d % 15 * 2;
+  if (D === 30) {
+    const bounds = ODD_SIGN(s) ? [0, 5, 10, 18, 25, 30] : [0, 5, 12, 20, 25, 30];
+    let i = 0;
+    while (i < 4 && d >= bounds[i + 1]) i++;
+    return (d - bounds[i]) / (bounds[i + 1] - bounds[i]) * 30;
   }
-  return m;
+  const size = 30 / D;
+  return d % size * D;
 }
-var isOwnSign = (p, sign) => p <= 6 && OWN_SIGNS[p].includes(sign);
-var isExaltationSign = (p, sign) => p <= 6 && EXALTATION_SIGN[p] === sign;
-var isDebilitationSign = (p, sign) => p <= 6 && DEBILITATION_SIGN[p] === sign;
-function isMoolatrikona(p, sign, deg = null) {
-  if (p > 6) return false;
-  const [s, from, to] = MOOLATRIKONA[p];
-  if (sign !== s) return false;
-  if (deg == null) return true;
-  return deg >= from && deg < to;
+var vargaLongitude = (lon, D) => vargaSign(lon, D) * 30 + vargaDegree(lon, D);
+var VIMSHOPAKA = {
+  Shadvarga: { 1: 6, 2: 2, 3: 4, 9: 5, 12: 2, 30: 1 },
+  Saptavarga: { 1: 5, 2: 2, 3: 3, 7: 2.5, 9: 4.5, 12: 2, 30: 1 },
+  Dasavarga: { 1: 3, 2: 1.5, 3: 1.5, 7: 1.5, 9: 1.5, 10: 1.5, 12: 1.5, 16: 1.5, 30: 1.5, 60: 5 },
+  Shodasavarga: { 1: 3.5, 2: 1, 3: 1, 4: 0.5, 7: 0.5, 9: 3, 10: 0.5, 12: 0.5, 16: 2, 20: 0.5, 24: 0.5, 27: 0.5, 30: 1, 40: 0.5, 45: 0.5, 60: 4 }
+};
+var VIMSHOPAKA_POINTS = { exalted: 20, moolatrikona: 20, own: 20, adhimitra: 18, mitra: 15, sama: 10, satru: 7, adhisatru: 5 };
+var AMSA_NAMES = {
+  Shadvarga: { 2: "Kimsuka", 3: "Vyanjana", 4: "Chamara", 5: "Chatra", 6: "Kundala" },
+  Saptavarga: { 2: "Kimsuka", 3: "Vyanjana", 4: "Chamara", 5: "Chatra", 6: "Kundala", 7: "Mukuta" },
+  Dasavarga: { 2: "Parijata", 3: "Uttama", 4: "Gopura", 5: "Simhasana", 6: "Paravata", 7: "Devaloka", 8: "Brahmaloka", 9: "Airavata", 10: "Sridhama" },
+  Shodasavarga: { 2: "Bhedaka", 3: "Kusuma", 4: "Nagapushpa", 5: "Kanduka", 6: "Kerala", 7: "Kalpavriksha", 8: "Chandanavana", 9: "Poornachandra", 10: "Uchchaisrava", 11: "Dhanvantari", 12: "Suryakanta", 13: "Vidruma", 14: "Indrasana", 15: "Golokamsa", 16: "Srivallabha" }
+};
+function divisionalCharts(chart) {
+  const compound = compoundMatrix(SEVEN.map((p) => chart.planets[p].sign));
+  const dignityOf = (p, sign, deg, D) => {
+    const d = dignity(p, sign, D === 1 ? deg : null, compound);
+    if (d === "moolatrikona" && D !== 1) return isOwnSign(p, sign) ? "own" : compound[p][SIGN_LORD[sign]];
+    return d;
+  };
+  const charts = SHODASAVARGA.map((D) => {
+    const lagnaLon = vargaLongitude(chart.asc, D);
+    const lagnaSign = Math.floor(lagnaLon / 30);
+    const planets = chart.planets.map((P, p) => {
+      const lon = vargaLongitude(P.lon, D), sign = Math.floor(lon / 30), deg = lon - sign * 30;
+      const dignity2 = p <= 6 ? dignityOf(p, sign, deg, D) : null;
+      return { sign, deg, lon, house: ((sign - lagnaSign) % 12 + 12) % 12 + 1, dignity: dignity2, vargottama: D !== 1 && sign === P.sign };
+    });
+    return { D, name: VARGA_NAMES[D], lagna: { lon: lagnaLon, sign: lagnaSign, deg: lagnaLon - lagnaSign * 30 }, planets };
+  });
+  const byD = Object.fromEntries(charts.map((c) => [c.D, c]));
+  const vimshopaka = {}, vishwa = {};
+  for (let p = 0; p <= 6; p++) {
+    vimshopaka[p] = {};
+    vishwa[p] = {};
+    for (const [scheme, weights] of Object.entries(VIMSHOPAKA)) {
+      let score = 0, good = 0;
+      for (const [D, w] of Object.entries(weights)) {
+        const dig = byD[+D].planets[p].dignity;
+        score += w * (VIMSHOPAKA_POINTS[dig] ?? 10) / 20;
+        if (dig === "exalted" || dig === "moolatrikona" || dig === "own") good++;
+      }
+      vimshopaka[p][scheme] = score;
+      vishwa[p][scheme] = { count: good, name: AMSA_NAMES[scheme][good] || null };
+    }
+  }
+  return { charts, vimshopaka, vishwa };
 }
 
 // src/shadbala.js
@@ -4499,9 +4563,8 @@ function renderAll({ chart, shadbala, upagrahas, avasthas, ashtakavarga, lagnas,
   const c = chart, off = c.input.utcOffset;
   const parts = [];
   parts.push(renderHeader(c));
-  parts.push(renderPlacements(c));
+  parts.push(renderPlacements(c, karakas));
   if (lagnas) parts.push(renderLagnas(lagnas));
-  if (karakas) parts.push(renderKarakas(karakas));
   parts.push(renderDivisional(c));
   parts.push(renderDignities(c));
   parts.push(renderRelationships(c));
@@ -4527,16 +4590,17 @@ function renderHeader(c) {
   ];
   return `<section id="header"><dl class="kv">${rows.map(([k, v]) => `<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join("")}</dl></section>`;
 }
-function renderPlacements(c) {
+function renderPlacements(c, karakas) {
+  const karakaOf = Object.fromEntries((karakas || []).map((k) => [k.planet, k.karaka]));
   const rows = [];
   const L = c.lagna;
-  rows.push(["Lagna", txt(signDeg(L.lon)), txt(nak(L.nakshatra)), txt(pname(L.nakshatra.lord)), txt(pname(L.signLord)), txt("1"), txt("1"), txt("")]);
+  rows.push(["Lagna", txt(signDeg(L.lon)), txt(nak(L.nakshatra)), txt(pname(L.nakshatra.lord)), txt(pname(L.signLord)), txt("1"), txt("1"), txt(""), txt("")]);
   for (const p of NINE) {
     const P = c.planets[p];
     const status = [P.retro ? "retrograde" : "", P.combust ? "combust" : "", P.war ? P.war.won ? `wins war against ${pname(P.war.with)}` : `loses war to ${pname(P.war.with)}` : ""].filter(Boolean).join(", ");
-    rows.push([pname(p), txt(signDeg(P.lon)), txt(nak(P.nakshatra)), txt(pname(P.nakshatra.lord)), txt(pname(P.signLord)), txt(String(P.house)), txt(String(P.bhava)), txt(status, "wrap")]);
+    rows.push([pname(p), txt(signDeg(P.lon)), txt(nak(P.nakshatra)), txt(pname(P.nakshatra.lord)), txt(pname(P.signLord)), txt(String(P.house)), txt(String(P.bhava)), txt(karakaOf[p] || ""), txt(status, "wrap")]);
   }
-  return `<section id="placements"><h2>Placements</h2>${table("", ["Graha", "Sign and degree", "Nakshatra and pada", "Nakshatra lord", "Sign lord", "House", "Bhava", "Status"], rows)}</section>`;
+  return `<section id="placements"><h2>Placements</h2>${table("", ["Graha", "Sign and degree", "Nakshatra and pada", "Nakshatra lord", "Sign lord", "House", "Bhava", "Chara karaka", "Status"], rows)}</section>`;
 }
 function renderUpagrahas(c, ups) {
   const off = c.input.utcOffset;
@@ -4647,18 +4711,31 @@ function renderAspects(c, special) {
   const rows = NINE.map((q) => [pname(q), ...m.rows[q].map((v) => v == null ? txt("\u2014") : num(v))]);
   return `<section id="aspects"><h2>Aspects</h2>${table("", head, rows, "matrix")}</section>`;
 }
+var DIGNITY_WORD = { exalted: "Exalted", moolatrikona: "Moolatrikona", own: "Own sign", debilitated: "Debilitated", adhimitra: "Great friend's sign", mitra: "Friend's sign", sama: "Neutral's sign", satru: "Enemy's sign", adhisatru: "Great enemy's sign" };
 function renderDivisional(c) {
+  const dv = divisionalCharts(c);
   const head = ["Chart", "Lagna", ...NINE.map(pname)];
-  const rows = divisionalCharts(c).map((v) => [v.name, txt(SIGN_NAMES[v.lagna]), ...v.planets.map((s) => txt(SIGN_NAMES[s]))]);
-  return `<section id="vargas"><h2>Divisional charts</h2>${table("", head, rows, "matrix")}</section>`;
+  const summary = dv.charts.map((v) => [v.name, txt(SIGN_NAMES[v.lagna.sign]), ...v.planets.map((x) => txt(SIGN_NAMES[x.sign]))]);
+  let html = `<section id="vargas"><h2>Divisional charts</h2>${table("", head, summary, "matrix")}`;
+  for (const v of dv.charts) {
+    if (v.D === 1) continue;
+    const rows = [["Lagna", txt(`${SIGN_NAMES[v.lagna.sign]} ${fmtDMS(v.lagna.deg, 2)}`), txt("1"), txt(""), txt("")]];
+    v.planets.forEach((x, p) => rows.push([pname(p), txt(`${SIGN_NAMES[x.sign]} ${fmtDMS(x.deg, 2)}`), txt(String(x.house)), txt(x.dignity ? DIGNITY_WORD[x.dignity] : ""), yes(x.vargottama)]));
+    html += `<h2>${esc(v.name)}</h2>${table("", ["Graha", "Sign and degree", "House", "Dignity", "Vargottama"], rows)}`;
+  }
+  const schemes = Object.keys(dv.vimshopaka[0]);
+  const vb = SEVEN.map((p) => [pname(p), ...schemes.map((sch) => num(dv.vimshopaka[p][sch]))]);
+  html += `<h2>Vimshopaka bala</h2>${table("", ["Graha", ...schemes], vb, "matrix")}`;
+  const vv = SEVEN.map((p) => [pname(p), ...schemes.map((sch) => {
+    const e = dv.vishwa[p][sch];
+    return txt(`${e.count}${e.name ? " \xB7 " + e.name : ""}`);
+  })]);
+  html += `<h2>Varga vishwa</h2>${table("", ["Graha", ...schemes], vv, "matrix")}</section>`;
+  return html;
 }
 function renderLagnas(lagnas) {
   const rows = lagnas.map((u) => u.lon == null ? [u.name, txt(u.unavailable || "\u2014", "wrap"), txt("\u2014"), txt("\u2014"), txt("\u2014"), txt("\u2014")] : [u.name, txt(signDeg(u.lon)), txt(nak(u.nakshatra)), txt(pname(u.nakshatra.lord)), txt(String(u.house)), txt(String(u.bhava))]);
   return `<section id="lagnas"><h2>Special lagnas</h2>${table("", ["Lagna", "Sign and degree", "Nakshatra and pada", "Nakshatra lord", "House", "Bhava"], rows)}</section>`;
-}
-function renderKarakas(karakas) {
-  const rows = karakas.map((k) => [k.karaka, txt(pname(k.planet)), txt(fmtDMS(k.advancement, 2))]);
-  return `<section id="karakas"><h2>Chara karakas</h2>${table("", ["Karaka", "Graha", "Advancement in sign"], rows)}</section>`;
 }
 
 // src/atlas.js

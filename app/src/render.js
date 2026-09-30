@@ -27,9 +27,8 @@ export function renderAll({ chart, shadbala, upagrahas, avasthas, ashtakavarga, 
   const c = chart, off = c.input.utcOffset;
   const parts = [];
   parts.push(renderHeader(c));
-  parts.push(renderPlacements(c));
+  parts.push(renderPlacements(c, karakas));
   if (lagnas) parts.push(renderLagnas(lagnas));
-  if (karakas) parts.push(renderKarakas(karakas));
   parts.push(renderDivisional(c));
   parts.push(renderDignities(c));
   parts.push(renderRelationships(c));
@@ -57,16 +56,17 @@ function renderHeader(c) {
   return `<section id="header"><dl class="kv">${rows.map(([k, v]) => `<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join('')}</dl></section>`;
 }
 
-function renderPlacements(c) {
+function renderPlacements(c, karakas) {
+  const karakaOf = Object.fromEntries((karakas || []).map(k => [k.planet, k.karaka]));
   const rows = [];
   const L = c.lagna;
-  rows.push(['Lagna', txt(signDeg(L.lon)), txt(nak(L.nakshatra)), txt(pname(L.nakshatra.lord)), txt(pname(L.signLord)), txt('1'), txt('1'), txt('')]);
+  rows.push(['Lagna', txt(signDeg(L.lon)), txt(nak(L.nakshatra)), txt(pname(L.nakshatra.lord)), txt(pname(L.signLord)), txt('1'), txt('1'), txt(''), txt('')]);
   for (const p of NINE) {
     const P = c.planets[p];
     const status = [P.retro ? 'retrograde' : '', P.combust ? 'combust' : '', P.war ? (P.war.won ? `wins war against ${pname(P.war.with)}` : `loses war to ${pname(P.war.with)}`) : ''].filter(Boolean).join(', ');
-    rows.push([pname(p), txt(signDeg(P.lon)), txt(nak(P.nakshatra)), txt(pname(P.nakshatra.lord)), txt(pname(P.signLord)), txt(String(P.house)), txt(String(P.bhava)), txt(status, 'wrap')]);
+    rows.push([pname(p), txt(signDeg(P.lon)), txt(nak(P.nakshatra)), txt(pname(P.nakshatra.lord)), txt(pname(P.signLord)), txt(String(P.house)), txt(String(P.bhava)), txt(karakaOf[p] || ''), txt(status, 'wrap')]);
   }
-  return `<section id="placements"><h2>Placements</h2>${table('', ['Graha', 'Sign and degree', 'Nakshatra and pada', 'Nakshatra lord', 'Sign lord', 'House', 'Bhava', 'Status'], rows)}</section>`;
+  return `<section id="placements"><h2>Placements</h2>${table('', ['Graha', 'Sign and degree', 'Nakshatra and pada', 'Nakshatra lord', 'Sign lord', 'House', 'Bhava', 'Chara karaka', 'Status'], rows)}</section>`;
 }
 
 function renderUpagrahas(c, ups) {
@@ -170,10 +170,25 @@ function renderAspects(c, special) {
   return `<section id="aspects"><h2>Aspects</h2>${table('', head, rows, 'matrix')}</section>`;
 }
 
+const DIGNITY_WORD = { exalted: 'Exalted', moolatrikona: 'Moolatrikona', own: 'Own sign', debilitated: 'Debilitated', adhimitra: "Great friend's sign", mitra: "Friend's sign", sama: "Neutral's sign", satru: "Enemy's sign", adhisatru: "Great enemy's sign" };
+
 function renderDivisional(c) {
+  const dv = divisionalCharts(c);
   const head = ['Chart', 'Lagna', ...NINE.map(pname)];
-  const rows = divisionalCharts(c).map(v => [v.name, txt(SIGN_NAMES[v.lagna]), ...v.planets.map(s => txt(SIGN_NAMES[s]))]);
-  return `<section id="vargas"><h2>Divisional charts</h2>${table('', head, rows, 'matrix')}</section>`;
+  const summary = dv.charts.map(v => [v.name, txt(SIGN_NAMES[v.lagna.sign]), ...v.planets.map(x => txt(SIGN_NAMES[x.sign]))]);
+  let html = `<section id="vargas"><h2>Divisional charts</h2>${table('', head, summary, 'matrix')}`;
+  for (const v of dv.charts) {
+    if (v.D === 1) continue;
+    const rows = [['Lagna', txt(`${SIGN_NAMES[v.lagna.sign]} ${fmtDMS(v.lagna.deg, 2)}`), txt('1'), txt(''), txt('')]];
+    v.planets.forEach((x, p) => rows.push([pname(p), txt(`${SIGN_NAMES[x.sign]} ${fmtDMS(x.deg, 2)}`), txt(String(x.house)), txt(x.dignity ? DIGNITY_WORD[x.dignity] : ''), yes(x.vargottama)]));
+    html += `<h2>${esc(v.name)}</h2>${table('', ['Graha', 'Sign and degree', 'House', 'Dignity', 'Vargottama'], rows)}`;
+  }
+  const schemes = Object.keys(dv.vimshopaka[0]);
+  const vb = SEVEN.map(p => [pname(p), ...schemes.map(sch => num(dv.vimshopaka[p][sch]))]);
+  html += `<h2>Vimshopaka bala</h2>${table('', ['Graha', ...schemes], vb, 'matrix')}`;
+  const vv = SEVEN.map(p => [pname(p), ...schemes.map(sch => { const e = dv.vishwa[p][sch]; return txt(`${e.count}${e.name ? ' · ' + e.name : ''}`); })]);
+  html += `<h2>Varga vishwa</h2>${table('', ['Graha', ...schemes], vv, 'matrix')}</section>`;
+  return html;
 }
 
 function renderLagnas(lagnas) {
@@ -182,7 +197,3 @@ function renderLagnas(lagnas) {
   return `<section id="lagnas"><h2>Special lagnas</h2>${table('', ['Lagna', 'Sign and degree', 'Nakshatra and pada', 'Nakshatra lord', 'House', 'Bhava'], rows)}</section>`;
 }
 
-function renderKarakas(karakas) {
-  const rows = karakas.map(k => [k.karaka, txt(pname(k.planet)), txt(fmtDMS(k.advancement, 2))]);
-  return `<section id="karakas"><h2>Chara karakas</h2>${table('', ['Karaka', 'Graha', 'Advancement in sign'], rows)}</section>`;
-}

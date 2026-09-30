@@ -1,6 +1,7 @@
 // Divisional-chart sign of a longitude (0..360). Parashari definitions used by Saptavargaja bala.
 import { norm360 } from './time.js';
-import { MARS, MERCURY, JUPITER, VENUS, SATURN, ODD_SIGN, MOVABLE, FIXED } from './constants.js';
+import { SEVEN, MARS, MERCURY, JUPITER, VENUS, SATURN, ODD_SIGN, MOVABLE, FIXED, SIGN_LORD } from './constants.js';
+import { compoundMatrix, dignity, isOwnSign } from './relations.js';
 
 export const rasiOf = (lon) => Math.floor(norm360(lon) / 30) % 12;
 export const degInSign = (lon) => norm360(lon) % 30;
@@ -85,11 +86,75 @@ export const SAPTAVARGA = [1, 2, 3, 7, 9, 12, 30];
 export const SHODASAVARGA = [1, 2, 3, 4, 7, 9, 10, 12, 16, 20, 24, 27, 30, 40, 45, 60];
 export function vargaSign(lon, D) { return VARGA_FUNCS[D](lon); }
 
-/** Sixteen Parashari divisional charts: for each D the varga sign of the Lagna and of the nine grahas. */
+/** Degree within the varga sign (varga longitude = varga sign × 30 + this). */
+export function vargaDegree(lon, D) {
+  const d = degInSign(lon), s = rasiOf(lon);
+  if (D === 1) return d;
+  if (D === 2) return (d % 15) * 2;
+  if (D === 30) {
+    const bounds = ODD_SIGN(s) ? [0, 5, 10, 18, 25, 30] : [0, 5, 12, 20, 25, 30];
+    let i = 0; while (i < 4 && d >= bounds[i + 1]) i++;
+    return (d - bounds[i]) / (bounds[i + 1] - bounds[i]) * 30;
+  }
+  const size = 30 / D;
+  return (d % size) * D;
+}
+export const vargaLongitude = (lon, D) => vargaSign(lon, D) * 30 + vargaDegree(lon, D);
+
+/** Vimshopaka bala weights (Brihat Parashara Hora Shastra); each scheme totals 20. */
+export const VIMSHOPAKA = {
+  Shadvarga: { 1: 6, 2: 2, 3: 4, 9: 5, 12: 2, 30: 1 },
+  Saptavarga: { 1: 5, 2: 2, 3: 3, 7: 2.5, 9: 4.5, 12: 2, 30: 1 },
+  Dasavarga: { 1: 3, 2: 1.5, 3: 1.5, 7: 1.5, 9: 1.5, 10: 1.5, 12: 1.5, 16: 1.5, 30: 1.5, 60: 5 },
+  Shodasavarga: { 1: 3.5, 2: 1, 3: 1, 4: 0.5, 7: 0.5, 9: 3, 10: 0.5, 12: 0.5, 16: 2, 20: 0.5, 24: 0.5, 27: 0.5, 30: 1, 40: 0.5, 45: 0.5, 60: 4 },
+};
+/** Vimshopaka points out of 20 by dignity in a varga. */
+export const VIMSHOPAKA_POINTS = { exalted: 20, moolatrikona: 20, own: 20, adhimitra: 18, mitra: 15, sama: 10, satru: 7, adhisatru: 5 };
+/** Varga vishwa: names for a planet in its own, moolatrikona or exaltation sign in n vargas of each scheme. */
+export const AMSA_NAMES = {
+  Shadvarga: { 2: 'Kimsuka', 3: 'Vyanjana', 4: 'Chamara', 5: 'Chatra', 6: 'Kundala' },
+  Saptavarga: { 2: 'Kimsuka', 3: 'Vyanjana', 4: 'Chamara', 5: 'Chatra', 6: 'Kundala', 7: 'Mukuta' },
+  Dasavarga: { 2: 'Parijata', 3: 'Uttama', 4: 'Gopura', 5: 'Simhasana', 6: 'Paravata', 7: 'Devaloka', 8: 'Brahmaloka', 9: 'Airavata', 10: 'Sridhama' },
+  Shodasavarga: { 2: 'Bhedaka', 3: 'Kusuma', 4: 'Nagapushpa', 5: 'Kanduka', 6: 'Kerala', 7: 'Kalpavriksha', 8: 'Chandanavana', 9: 'Poornachandra', 10: 'Uchchaisrava', 11: 'Dhanvantari', 12: 'Suryakanta', 13: 'Vidruma', 14: 'Indrasana', 15: 'Golokamsa', 16: 'Srivallabha' },
+};
+
+/**
+ * Sixteen Parashari divisional charts with varga longitudes, houses from the varga lagna, dignity (compound relationship
+ * of the rasi chart, as the Saptavargaja bala uses), vargottama, plus Vimshopaka bala and varga vishwa for the seven planets.
+ * In the vargas other than rasi, moolatrikona is a sign-level notion, so the moolatrikona sign counts as own sign when the planet
+ * owns it and by the lord's relationship otherwise (the Moon in Taurus).
+ */
 export function divisionalCharts(chart) {
-  return SHODASAVARGA.map(D => ({
-    D, name: VARGA_NAMES[D],
-    lagna: vargaSign(chart.asc, D),
-    planets: chart.planets.map(p => vargaSign(p.lon, D)),
-  }));
+  const compound = compoundMatrix(SEVEN.map(p => chart.planets[p].sign));
+  const dignityOf = (p, sign, deg, D) => {
+    const d = dignity(p, sign, D === 1 ? deg : null, compound);
+    if (d === 'moolatrikona' && D !== 1) return isOwnSign(p, sign) ? 'own' : compound[p][SIGN_LORD[sign]];
+    return d;
+  };
+  const charts = SHODASAVARGA.map((D) => {
+    const lagnaLon = vargaLongitude(chart.asc, D);
+    const lagnaSign = Math.floor(lagnaLon / 30);
+    const planets = chart.planets.map((P, p) => {
+      const lon = vargaLongitude(P.lon, D), sign = Math.floor(lon / 30), deg = lon - sign * 30;
+      const dignity = p <= 6 ? dignityOf(p, sign, deg, D) : null;
+      return { sign, deg, lon, house: ((sign - lagnaSign) % 12 + 12) % 12 + 1, dignity, vargottama: D !== 1 && sign === P.sign };
+    });
+    return { D, name: VARGA_NAMES[D], lagna: { lon: lagnaLon, sign: lagnaSign, deg: lagnaLon - lagnaSign * 30 }, planets };
+  });
+  const byD = Object.fromEntries(charts.map(c => [c.D, c]));
+  const vimshopaka = {}, vishwa = {};
+  for (let p = 0; p <= 6; p++) {
+    vimshopaka[p] = {}; vishwa[p] = {};
+    for (const [scheme, weights] of Object.entries(VIMSHOPAKA)) {
+      let score = 0, good = 0;
+      for (const [D, w] of Object.entries(weights)) {
+        const dig = byD[+D].planets[p].dignity;
+        score += w * (VIMSHOPAKA_POINTS[dig] ?? 10) / 20;
+        if (dig === 'exalted' || dig === 'moolatrikona' || dig === 'own') good++;
+      }
+      vimshopaka[p][scheme] = score;
+      vishwa[p][scheme] = { count: good, name: AMSA_NAMES[scheme][good] || null };
+    }
+  }
+  return { charts, vimshopaka, vishwa };
 }

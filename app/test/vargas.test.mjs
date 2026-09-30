@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { getEph, FIXTURE_DIR } from './helpers.mjs';
 import { computeChart } from '../src/chart.js';
-import { divisionalCharts, vargaSign, SHODASAVARGA } from '../src/vargas.js';
+import { divisionalCharts, vargaSign, vargaDegree, vargaLongitude, SHODASAVARGA, VIMSHOPAKA } from '../src/vargas.js';
 
 const fixtures = JSON.parse(fs.readFileSync(path.join(FIXTURE_DIR, 'vargas.json'), 'utf8'));
 
@@ -12,11 +12,12 @@ test('fifteen Parashari vargas match PyJHora for Lagna and nine grahas; Hora fol
   const eph = await getEph();
   for (const fx of fixtures) {
     const chart = computeChart(eph, fx.input);
-    for (const v of divisionalCharts(chart)) {
-      if (v.D === 2) { assert.ok([3, 4].includes(v.lagna)); v.planets.forEach(s => assert.ok([3, 4].includes(s))); continue; }
+    for (const v of divisionalCharts(chart).charts) {
+      const signs = v.planets.map(x => x.sign);
+      if (v.D === 2) { assert.ok([3, 4].includes(v.lagna.sign)); signs.forEach(s => assert.ok([3, 4].includes(s))); continue; }
       const o = fx.vargas[String(v.D)];
-      assert.equal(v.lagna, o.lagna, `${fx.input.id} D${v.D} lagna`);
-      assert.deepEqual(v.planets, o.planets, `${fx.input.id} D${v.D}`);
+      assert.equal(v.lagna.sign, o.lagna, `${fx.input.id} D${v.D} lagna`);
+      assert.deepEqual(signs, o.planets, `${fx.input.id} D${v.D}`);
     }
   }
 });
@@ -34,4 +35,21 @@ test('division rules at exact boundaries', () => {
   assert.equal(vargaSign(29.5, 60), 11 % 12 === 11 ? 11 : 11); assert.equal((0 + 59) % 12, 11);
   // Chaturthamsa: Aries 22.5° → 4th part → Capricorn
   assert.equal(vargaSign(22.5, 4), 9);
+});
+
+test('varga longitudes: degree within the varga sign scales each part to 30°, including hora and the unequal trimsamsa', () => {
+  assert.ok(Math.abs(vargaDegree(22.5, 2) - 15) < 1e-9);          // second hora, halfway → 15°
+  assert.ok(Math.abs(vargaDegree(3 + 1 / 3 + 1, 9) - 9) < 1e-9);  // 1° into the second navamsa → 9°
+  assert.ok(Math.abs(vargaDegree(14, 30) - 15) < 1e-9);           // odd sign: Jupiter's part 10–18, 14 is halfway → 15°
+  assert.ok(Math.abs(vargaDegree(30 + 16, 30) - 15) < 1e-9);      // even sign: Jupiter's part 12–20, 16 is halfway → 15°
+  assert.ok(Math.abs(vargaLongitude(0.25, 60) - 15) < 1e-9);      // first shashtiamsa, halfway → Aries 15°
+});
+
+test('Vimshopaka: weights total 20 per scheme; scores stay within 0..20; vargottama is flagged when a planet keeps its rasi sign', async () => {
+  for (const w of Object.values(VIMSHOPAKA)) assert.ok(Math.abs(Object.values(w).reduce((a, b) => a + b, 0) - 20) < 1e-9);
+  const eph = await getEph();
+  const dv = divisionalCharts(computeChart(eph, fixtures[0].input));
+  for (let p = 0; p <= 6; p++) for (const v of Object.values(dv.vimshopaka[p])) assert.ok(v >= 5 && v <= 20);
+  const nav = dv.charts.find(v => v.D === 9);
+  nav.planets.forEach((x, p) => assert.equal(x.vargottama, x.sign === fixtures[0].vargas['1'].planets[p]));
 });
