@@ -1,0 +1,15 @@
+{
+  "name": "asman-jyotisa-calculator",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Outputs-only Vedic birth-chart calculator (JHora conventions, Swiss Ephemeris in WebAssembly): placements, nakshatras, upagrahas, Shadbala, Ishta/Kashta, Deeptadi and Lajjitadi avasthas.",
+  "type": "module",
+  "license": "AGPL-3.0-or-later",
+  "scripts": {
+    "build": "node build.mjs",
+    "test": "node --test"
+  },
+  "devDependencies": {
+    "esbuild": "0.24.2"
+  }
+}

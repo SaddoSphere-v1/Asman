@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Graha Bala</title>
+<meta name="description" content="Outputs-only Vedic birth-chart calculator: placements with nakshatras, upagrahas, Shadbala, Ishta/Kashta, Deeptadi and Lajjitadi avasthas. Lahiri ayanamsa, true node, Swiss Ephemeris.">
+<style>/*__CSS__*/</style>
+</head>
+<body>
+<main>
+  <h1>Graha Bala <small>Lahiri · true node · Swiss Ephemeris · JHora conventions</small></h1>
+  <p class="lede">Enter the birth data and press Compute. Every value is shown; nothing is interpreted.</p>
+  <form class="inputs" id="form" autocomplete="off">
+    <label>Date <input type="date" id="date" required min="1800-01-01" max="2399-12-31"></label>
+    <label>Time <input type="time" id="time" step="1" required></label>
+    <label>Time zone <select id="zone"></select><span class="tzinfo" id="tzinfo"></span></label>
+    <label>UTC offset override <input type="text" id="offset" placeholder="e.g. +05:30 (blank = zone)"></label>
+    <label>Latitude (°, S negative) <input type="number" id="lat" step="any" min="-90" max="90" required placeholder="13.0827"></label>
+    <label>Longitude (°, W negative) <input type="number" id="lon" step="any" min="-180" max="180" required placeholder="80.2707"></label>
+    <label>Place label (optional) <input type="text" id="place" placeholder="Chennai"></label>
+    <details class="options" id="options">
+      <summary>Calculation options (defaults follow JHora / B.V. Raman)</summary>
+      <div class="grid" id="optgrid"></div>
+    </details>
+    <div class="actions">
+      <button type="submit" class="primary" id="compute">Compute</button>
+      <button type="button" id="copy" disabled>Copy as text</button>
+      <button type="button" id="json" disabled>Download JSON</button>
+      <button type="button" id="print" disabled>Print</button>
+      <span class="status" id="status">Loading ephemeris…</span>
+    </div>
+  </form>
+  <div id="results"></div>
+  <footer>
+    Ephemeris: Swiss Ephemeris (Astrodienst AG, Dieter Koch &amp; Alois Treindl) compiled to WebAssembly, with the sepl_18/semo_18 data files (1800–2399) embedded; licensed under the GNU AGPL-3.0-or-later. This HTML file is the complete corresponding source. Formulas: Brihat Parashara Hora Shastra ch. 3, 26, 27, 45; B.V. Raman, <em>Graha and Bhava Balas</em>; P.V.R. Narasimha Rao, <em>Vedic Astrology: An Integrated Approach</em>.
+  </footer>
+</main>
+<script type="module">/*__JS__*/</script>
+</body>
+</html>
