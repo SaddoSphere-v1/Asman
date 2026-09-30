@@ -1,11 +1,12 @@
 // HTML + plain-text rendering of the results. No interpretation, tables only.
-import { fmtDMS, fmtHours, fmtLocalDateTime, formatOffset } from './time.js';
+import { fmtDMS, fmtHours, fmtLocalDateTime, formatOffset, localHours } from './time.js';
 import { SEVEN, NINE, PLANET_NAMES, SIGN_NAMES, WEEKDAY_NAMES } from './constants.js';
 import { SAPTAVARGA } from './vargas.js';
 
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const n2 = (x) => (x == null || !Number.isFinite(x) ? '—' : (Math.round(x * 100) / 100).toFixed(2));
 const n1 = (x) => (x == null || !Number.isFinite(x) ? '—' : x.toFixed(1));
+const n4 = (x) => (x == null || !Number.isFinite(x) ? '—' : x.toFixed(4));
 const signDeg = (lon) => `${SIGN_NAMES[Math.floor(lon / 30) % 12]} ${fmtDMS(lon % 30, 2)}`;
 const VARGA_NAMES = { 1: 'Rasi', 2: 'Hora', 3: 'Drekkana', 7: 'Saptamsa', 9: 'Navamsa', 12: 'Dwadasamsa', 30: 'Trimsamsa' };
 const DIGNITY_NAMES = { MT: 'moolatrikona', own: 'own sign', adhimitra: 'great friend', mitra: 'friend', sama: 'neutral', satru: 'enemy', adhisatru: 'great enemy' };
@@ -20,7 +21,7 @@ function table(caption, head, rows, cls = '') {
   const body = rows.map((r) => `<tr>${r.map((c, i) => (i === 0 ? `<th scope="row">${c.html ? c.html : esc(c)}</th>` : `<td${c && c.cls ? ` class="${c.cls}"` : ''}>${c && c.html != null ? c.html : esc(c == null ? '' : c)}</td>`)).join('')}</tr>`).join('');
   return `<figure class="tbl ${cls}"><table><caption>${esc(caption)}</caption><thead><tr>${th}</tr></thead><tbody>${body}</tbody></table></figure>`;
 }
-const num = (x, d = 2) => ({ html: esc(d === 2 ? n2(x) : n1(x)), cls: 'num' });
+const num = (x, d = 2) => ({ html: esc(d === 4 ? n4(x) : d === 2 ? n2(x) : n1(x)), cls: 'num' });
 const txt = (s, cls) => ({ html: esc(s), cls });
 
 export function renderAll({ chart, shadbala, upagrahas, avasthas, meta }) {
@@ -32,7 +33,7 @@ export function renderAll({ chart, shadbala, upagrahas, avasthas, meta }) {
   parts.push(renderShadbala(c, shadbala));
   parts.push(renderIshtaKashta(shadbala));
   parts.push(renderAvasthas(avasthas));
-  parts.push(renderDetails(c, shadbala));
+  parts.push(renderDetails({ ...c, upagrahas }, shadbala, meta));
   return parts.join('\n');
 }
 
@@ -43,15 +44,10 @@ function renderHeader(c, sb, meta) {
     ...(c.input.name || c.input.gender ? [['Name', [c.input.name, c.input.gender].filter(Boolean).join(' · ')]] : []),
     ['Birth', `${c.input.year}-${String(c.input.month).padStart(2, '0')}-${String(c.input.day).padStart(2, '0')} ${fmtHours(c.input.hour + c.input.minute / 60 + (c.input.second || 0) / 3600)} local time, ${formatOffset(off)} from Greenwich${c.input.zone ? ' · ' + c.input.zone : ''}`],
     ['Birthplace', `${c.input.place ? c.input.place + ' · ' : ''}${cardinal(c.input.lat, 'north', 'south')}, ${cardinal(c.input.lon, 'east', 'west')}`],
-    ['Julian Day (Universal Time)', `${c.jdUt.toFixed(6)} · Delta T ${c.deltaT.toFixed(1)} seconds · local sidereal time ${fmtDMS(c.lst)}`],
-    ['Ayanamsa', `Lahiri ${fmtDMS(c.ayanamsa, 2)} · Rahu: true node · Swiss Ephemeris ${meta.sweVersion}`],
-    ['Sunrise / sunset', d.polar ? 'no sunrise or sunset at this latitude' : `${fmtLocalDateTime(d.sunrise, off)} / ${fmtLocalDateTime(d.sunset, off)} · next sunrise ${fmtLocalDateTime(d.nextSunrise, off)} (disc centre, no refraction)`],
-    ['Day / night', d.polar ? '—' : `${d.isDay ? 'day' : 'night'} birth · day ${fmtHours(d.dayLength * 24)} · night ${fmtHours(d.nightLength * 24)}`],
-    ['Weekday (from sunrise)', `${WEEKDAY_NAMES[c.weekday]} · lord ${pname(c.weekdayLord)}`],
-    ['Tithi', `${c.tithi} ${tithiName(c.tithi)} · ${c.waxing ? 'Shukla' : 'Krishna'} paksha · Moon − Sun ${fmtDMS(c.elongation)}`],
-    ['Hora lord at birth', sb.detail.horaLord == null ? '—' : `${pname(sb.detail.horaLord)} (hora ${sb.detail.horaIndex + 1} from sunrise, ${sb.options.horaMethod === 'equalHours' ? '60-minute horas' : 'day/12 + night/12'})`],
-    ['Year / month lords', `Abda ${pname(sb.detail.abdaLord)} · Masa ${pname(sb.detail.masaLord)} · ${sb.options.ahargana === 'kali' ? 'Kali' : 'Raman (1827)'} ahargana ${sb.detail.ahargana}`],
-    ['Houses', `${c.bhavas.system === 'sripati' ? 'Sripati (Porphyry madhyas)' : c.bhavas.system === 'equal' ? 'Equal, lagna in the middle of the first house' : 'Krishnamurti Paddhati: Placidus cusps as house starts'} · whole-sign houses for sign-based rules`],
+    ['Ayanamsa', `Lahiri ${fmtDMS(c.ayanamsa, 2)}`],
+    ['Sunrise / sunset', d.polar ? 'no sunrise or sunset at this latitude' : `${fmtHours(localHours(d.sunrise, off))} / ${fmtHours(localHours(d.sunset, off))} · ${d.isDay ? 'day' : 'night'} birth`],
+    ['Weekday', `${WEEKDAY_NAMES[c.weekday]}`],
+    ['Tithi', `${tithiName(c.tithi)} · ${c.waxing ? 'Shukla' : 'Krishna'} paksha`],
   ];
   return `<section id="header"><h2>Chart data</h2><dl class="kv">${rows.map(([k, v]) => `<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join('')}</dl></section>`;
 }
@@ -59,24 +55,22 @@ function renderHeader(c, sb, meta) {
 function renderPlacements(c) {
   const rows = [];
   const L = c.lagna;
-  rows.push(['Lagna', txt(signDeg(L.lon)), num(L.lon, 2), txt(nak(L.nakshatra)), txt(pname(L.nakshatra.lord)), txt(pname(L.signLord)), txt('1'), txt('1'), txt('—', 'num'), txt('')]);
+  rows.push(['Lagna', txt(signDeg(L.lon)), txt(nak(L.nakshatra)), txt(pname(L.nakshatra.lord)), txt(pname(L.signLord)), txt('1'), txt('1'), txt('')]);
   for (const p of NINE) {
     const P = c.planets[p];
     const status = [P.retro ? 'retrograde' : '', P.combust ? 'combust' : '', P.war ? (P.war.won ? `wins war against ${pname(P.war.with)}` : `loses war to ${pname(P.war.with)}`) : ''].filter(Boolean).join(', ');
-    rows.push([pname(p), txt(signDeg(P.lon)), num(P.lon, 2), txt(nak(P.nakshatra)), txt(pname(P.nakshatra.lord)), txt(pname(P.signLord)), txt(String(P.house)), txt(String(P.bhava)),
-      { html: esc((P.speed >= 0 ? '+' : '') + P.speed.toFixed(4)), cls: 'num' }, txt(status, 'wrap')]);
+    rows.push([pname(p), txt(signDeg(P.lon)), txt(nak(P.nakshatra)), txt(pname(P.nakshatra.lord)), txt(pname(P.signLord)), txt(String(P.house)), txt(String(P.bhava)), txt(status, 'wrap')]);
   }
-  return `<section id="placements"><h2>Placements</h2>${table('Sidereal (Lahiri) positions', ['Graha', 'Sign and degree', 'Longitude (degrees)', 'Nakshatra and pada', 'Nakshatra lord', 'Sign lord', 'House', 'Bhava', 'Speed (degrees per day)', 'Status'], rows)}</section>`;
+  return `<section id="placements"><h2>Placements</h2>${table('Sidereal (Lahiri) positions', ['Graha', 'Sign and degree', 'Nakshatra and pada', 'Nakshatra lord', 'Sign lord', 'House', 'Bhava', 'Status'], rows)}</section>`;
 }
 
 function renderUpagrahas(c, ups) {
   const off = c.input.utcOffset;
   const rows = ups.map((u) => {
-    if (u.lon == null) return [u.name, txt('—'), txt('—'), txt('—'), txt('—'), txt('—'), txt('—'), txt(u.unavailable || '', 'wrap')];
-    const basis = u.time != null ? `${u.isDay ? 'day' : 'night'} portion ${u.portion} (${pname(u.lord)}), ${u.point === 'begin' ? 'beginning' : u.point} · rising at ${fmtLocalDateTime(u.time, off)}` : (u.basis || '');
-    return [u.name, txt(signDeg(u.lon)), num(u.lon, 2), txt(nak(u.nakshatra)), txt(pname(u.nakshatra.lord)), txt(String(u.house)), txt(String(u.bhava)), txt(basis, 'wrap')];
+    if (u.lon == null) return [u.name, txt(u.unavailable || '—', 'wrap'), txt('—'), txt('—'), txt('—'), txt('—')];
+    return [u.name, txt(signDeg(u.lon)), txt(nak(u.nakshatra)), txt(pname(u.nakshatra.lord)), txt(String(u.house)), txt(String(u.bhava))];
   });
-  return `<section id="upagrahas"><h2>Upagrahas</h2>${table('Sun-based aprakasha grahas, kalavelas (ascendant rising at the portion point) and Pranapada', ['Upagraha', 'Sign and degree', 'Longitude (degrees)', 'Nakshatra and pada', 'Nakshatra lord', 'House', 'Bhava', 'Basis'], rows)}</section>`;
+  return `<section id="upagrahas"><h2>Upagrahas</h2>${table('Sun-based upagrahas, kalavelas and Pranapada', ['Upagraha', 'Sign and degree', 'Nakshatra and pada', 'Nakshatra lord', 'House', 'Bhava'], rows)}</section>`;
 }
 
 function renderShadbala(c, sb) {
@@ -102,10 +96,9 @@ function renderShadbala(c, sb) {
   let html = table('Shadbala — every component in shashtiamsas (virupas); 60 shashtiamsas = 1 rupa', head, rows, 'matrix');
   html = html.replace(/<tr><th scope="row">(Sthana bala|Dig bala|Kala bala|Chesta bala|Naisargika bala|Drik bala|Shadbala \(shashtiamsas\)|Shadbala \(rupas\)|Ratio)<\/th>/g, (m, l) => `<tr class="${l.startsWith('Shadbala') || l === 'Ratio' ? 'total' : 'sub'}"><th scope="row">${l}</th>`);
   const notes = [
-    `Benefics for Paksha/Drik: ${sb.detail.benefics.map(pname).join(', ')}; malefics: ${sb.detail.malefics.map(pname).join(', ')} (waxing Moon and Mercury by association).`,
-    `Sun's Chesta bala = Ayana bala and Moon's Chesta bala = Paksha bala (both already counted in Kala bala${sb.options.luminaryChestaInTotal ? ', and added again to the total' : '; shown but not added again to the total'}). Moon's Paksha bala and Sun's Ayana bala are doubled.`,
-    `Natonnata: ${n2(sb.detail.hoursFromMidnight)} hours from local ${sb.options.natonnataReference === 'lmt' ? 'mean' : 'apparent'} midnight. Tribhaga lord: ${sb.detail.tribhagaLord == null ? '—' : pname(sb.detail.tribhagaLord)}.`,
-    sb.detail.yuddha.length ? `Graha yuddha: ${sb.detail.yuddha.map(w => `${pname(w.winner)} defeats ${pname(w.loser)} (${fmtDMS(w.separation)} apart, ±${n2(w.value)})`).join('; ')}.` : 'No graha yuddha.',
+    `Benefics: ${sb.detail.benefics.map(pname).join(', ')}. Malefics: ${sb.detail.malefics.map(pname).join(', ')}.`,
+    `The Sun's Chesta bala is its Ayana bala and the Moon's is its Paksha bala; both are already counted in Kala bala and are ${sb.options.luminaryChestaInTotal ? 'added again to' : 'not added again to'} the total.`,
+    ...(sb.detail.yuddha.length ? [`Graha yuddha: ${sb.detail.yuddha.map(w => `${pname(w.winner)} defeats ${pname(w.loser)}`).join('; ')}.`] : []),
     ...sb.notes,
   ];
   return `<section id="shadbala"><h2>Shadbala</h2>${html}<p class="note">${notes.map(esc).join('<br>')}</p></section>`;
@@ -129,7 +122,7 @@ function renderAvasthas(av) {
   return `<section id="avasthas"><h2>Avasthas</h2>${table('Deeptadi avasthas (Brihat Parashara Hora Shastra 45.7: Deepta, Swastha, Pramudita, Shanta, Deena, Dukhita by dignity; Vikala with a malefic; Khala in a malefic\'s sign; Kopa when combust)', ['Graha', 'Avasthas', 'Basis'], d)}${table('Lajjitadi avasthas (Brihat Parashara Hora Shastra 45.11 to 45.18; all that apply; sign aspects, compound friendship)', ['Graha', 'Avasthas', 'Basis'], l)}</section>`;
 }
 
-function renderDetails(c, sb) {
+function renderDetails(c, sb, meta) {
   const svHead = ['Graha', ...SAPTAVARGA.map(D => VARGA_NAMES[D]), 'Total'];
   const svRows = SEVEN.map(p => [pname(p), ...SAPTAVARGA.map(D => { const e = sb.detail.saptavargaja[p][D]; return txt(`${SIGN_NAMES[e.sign]}, ${DIGNITY_NAMES[e.dignity] || e.dignity}: ${e.points}`, 'wrap'); }), num(sb.components.saptavargaja[p])]);
   const drHead = ['Aspected planet (rows) by aspecting planet (columns)', ...SEVEN.map(p => pname(p))];
@@ -138,10 +131,23 @@ function renderDetails(c, sb) {
   const bhRows = []; for (let i = 1; i <= 12; i++) bhRows.push([String(i), txt(signDeg(c.bhavas.start[i])), txt(signDeg(c.bhavas.madhya[i])), txt(signDeg(c.bhavas.end[i]))]);
   const chHead = ['Graha', 'Madhya (mean longitude)', 'Seeghrochcha', 'True longitude', 'Chesta kendra', 'Declination used'];
   const chRows = SEVEN.map(p => { const e = sb.detail.chesta[p]; return [pname(p), num(e ? e.madhya : NaN), num(e ? e.seeghrochcha : NaN), num(e ? e.trueLon : c.planets[p].tropLon), num(e ? e.chestaKendra : NaN), txt(fmtDMS(sb.detail.declination[p]))]; });
-  const ldHead = ['Graha', 'Ecliptic latitude', 'Declination', 'Right ascension'];
-  const ldRows = NINE.map(p => [pname(p), txt(fmtDMS(c.planets[p].lat)), txt(fmtDMS(c.planets[p].dec)), txt(fmtDMS(c.planets[p].ra))]);
-  return `<section id="details"><details><summary>Working tables (latitude and declination, Saptavargaja by varga, sputa drishti, bhava cusps, Chesta inputs)</summary>
-${table('Planetary latitude, declination and right ascension', ldHead, ldRows)}
+  const upHead = ['Upagraha', 'Longitude (degrees)', 'Portion', 'Point', 'Rising at (local time)'];
+  const upRows = (c.upagrahas || []).map(u => [u.name, num(u.lon, 2), txt(u.time != null ? `${u.isDay ? 'day' : 'night'} portion ${u.portion} of ${pname(u.lord)}` : (u.basis || u.unavailable || '')), txt(u.point ? (u.point === 'begin' ? 'beginning' : u.point) : ''), txt(u.time != null ? fmtLocalDateTime(u.time, c.input.utcOffset) : '')]);
+  const kalaRows = [
+    ['Time', `Julian Day ${c.jdUt.toFixed(6)} (Universal Time) · Delta T ${c.deltaT.toFixed(1)} seconds · local sidereal time ${fmtDMS(c.lst)}`],
+    ['Sunrise, sunset, next sunrise', c.day.polar ? '—' : `${fmtLocalDateTime(c.day.sunrise, c.input.utcOffset)} · ${fmtLocalDateTime(c.day.sunset, c.input.utcOffset)} · ${fmtLocalDateTime(c.day.nextSunrise, c.input.utcOffset)} (disc centre, no refraction) · day ${fmtHours(c.day.dayLength * 24)}, night ${fmtHours(c.day.nightLength * 24)}`],
+    ['Natonnata', `${n2(sb.detail.hoursFromMidnight)} hours from local apparent midnight`],
+    ['Tribhaga lord', sb.detail.tribhagaLord == null ? '—' : pname(sb.detail.tribhagaLord)],
+    ['Vara, hora, abda, masa lords', `${pname(sb.detail.varaLord)} · ${sb.detail.horaLord == null ? '—' : pname(sb.detail.horaLord) + ` (hora ${sb.detail.horaIndex + 1} from sunrise)`} · ${pname(sb.detail.abdaLord)} · ${pname(sb.detail.masaLord)} · Raman ahargana ${sb.detail.ahargana}`],
+    ['Moon − Sun', `${fmtDMS(c.elongation)} · tithi ${c.tithi}`],
+    ['Houses', 'Sripati bhava madhyas (Porphyry) · whole-sign houses for sign-based rules · Rahu: true node · Swiss Ephemeris ' + meta.sweVersion],
+  ];
+  const spHead = ['Graha', 'Longitude (degrees)', 'Speed (degrees per day)', 'Ecliptic latitude', 'Declination'];
+  const spRows = NINE.map(p => [pname(p), num(c.planets[p].lon, 4), { html: esc((c.planets[p].speed >= 0 ? '+' : '') + c.planets[p].speed.toFixed(4)), cls: 'num' }, txt(fmtDMS(c.planets[p].lat)), txt(fmtDMS(c.planets[p].dec))]);
+  return `<section id="details"><details><summary>Working tables (time, positions, kalavela timings, Saptavargaja by varga, sputa drishti, bhava cusps, Chesta inputs)</summary>
+<dl class="kv">${kalaRows.map(([k, v]) => `<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join('')}</dl>
+${table('Planetary longitude, speed, latitude and declination', spHead, spRows)}
+${table('Upagraha longitudes and kalavela timings', upHead, upRows)}
 ${table('Saptavargaja: sign, dignity and points in each of the seven vargas', svHead, svRows)}
 ${table('Sputa drishti (shashtiamsas) received by each planet from each planet', drHead, drRows, 'matrix')}
 ${table('Bhava boundaries', bhHead, bhRows)}
