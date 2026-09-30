@@ -1,6 +1,7 @@
 // HTML + plain-text rendering of the results. No interpretation, tables only.
 import { fmtDMS, fmtHours, formatOffset, localHours } from './time.js';
 import { SEVEN, NINE, PLANET_NAMES, SIGN_NAMES, WEEKDAY_NAMES } from './constants.js';
+import { aspectMatrix, relationshipTables, dignityTable } from './tables.js';
 
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const n2 = (x) => (x == null || !Number.isFinite(x) ? '—' : (Math.round(x * 100) / 100).toFixed(2));
@@ -26,6 +27,9 @@ export function renderAll({ chart, shadbala, upagrahas, avasthas, ashtakavarga, 
   const parts = [];
   parts.push(renderHeader(c));
   parts.push(renderPlacements(c));
+  parts.push(renderDignities(c));
+  parts.push(renderRelationships(c));
+  parts.push(renderAspects(c, shadbala.options.drishtiSpecial));
   parts.push(renderUpagrahas(c, upagrahas));
   parts.push(renderShadbala(c, shadbala));
   parts.push(renderIshtaKashta(shadbala));
@@ -137,4 +141,27 @@ function renderAshtakavarga(av) {
   eka = eka.replace('<tr><th scope="row">Sarvashtakavarga</th>', '<tr class="total"><th scope="row">Sarvashtakavarga</th>');
   const pindas = table('', ['', 'Rasi pinda', 'Graha pinda', 'Shodhya pinda'], SEVEN.map(p => [pname(p), intCell(av.rasiPinda[p]), intCell(av.grahaPinda[p]), intCell(av.shodhyaPinda[p])]));
   return `<section id="ashtakavarga"><h2>Ashtakavarga</h2>${bav}<h2>After Trikona shodhana</h2>${trik}<h2>After Ekadhipatya shodhana</h2>${eka}<h2>Shodhya pindas</h2>${pindas}</section>`;
+}
+
+const REL_WORD = { F: 'Friend', N: 'Neutral', E: 'Enemy', adhimitra: 'Great friend', mitra: 'Friend', sama: 'Neutral', satru: 'Enemy', adhisatru: 'Great enemy' };
+const yes = (b) => ({ html: b ? 'Yes' : '', cls: b ? '' : 'muted' });
+
+function renderDignities(c) {
+  const rows = dignityTable(c).map(d => [pname(d.planet), txt(SIGN_NAMES[d.sign]), txt(pname(d.lord)), yes(d.exalted), yes(d.debilitated), yes(d.own), yes(d.moolatrikona),
+    txt(d.natural ? REL_WORD[d.natural] : '—'), txt(d.compound ? REL_WORD[d.compound] : '—')]);
+  return `<section id="dignities"><h2>Dignities</h2>${table('', ['Graha', 'Sign', 'Sign lord', 'Exaltation', 'Debilitation', 'Own sign', 'Moolatrikona', 'Natural relation to lord', 'Compound relation to lord'], rows)}</section>`;
+}
+
+function renderRelationships(c) {
+  const r = relationshipTables(c);
+  const head = ['', ...SEVEN.map(pname)];
+  const grid = (m) => SEVEN.map(p => [pname(p), ...SEVEN.map(q => txt(p === q ? '—' : REL_WORD[m[p][q]]))]);
+  return `<section id="relationships"><h2>Natural relationships</h2>${table('', head, grid(r.natural), 'matrix')}<h2>Temporal relationships</h2>${table('', head, grid(r.temporal), 'matrix')}<h2>Compound relationships</h2>${table('', head, grid(r.compound), 'matrix')}</section>`;
+}
+
+function renderAspects(c, special) {
+  const m = aspectMatrix(c, special);
+  const head = ['Aspecting graha', ...NINE.map(pname), 'Lagna'];
+  const rows = NINE.map(q => [pname(q), ...m.rows[q].map(v => (v == null ? txt('—') : num(v)))]);
+  return `<section id="aspects"><h2>Aspects</h2>${table('', head, rows, 'matrix')}</section>`;
 }

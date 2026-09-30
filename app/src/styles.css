@@ -57,6 +57,7 @@ th, td { padding: 5px 10px; border-bottom: 1px solid var(--line-soft); text-alig
 thead th { font-weight: 600; color: var(--muted); font-size: 12.5px; background: var(--panel); position: sticky; top: 0; white-space: normal; min-width: 5ch; }
 tbody th[scope="row"] { font-weight: 500; }
 td.num { text-align: right; font-family: var(--mono); font-size: 13px; }
+td.muted { color: var(--muted); }
 tbody tr:last-child th, tbody tr:last-child td { border-bottom: none; }
 figure.matrix tbody th[scope="row"] { position: sticky; left: 0; background: var(--panel); }
 tr.sub th, tr.sub td { background: var(--sub); font-weight: 600; }

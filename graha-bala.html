@@ -71,6 +71,7 @@ th, td { padding: 5px 10px; border-bottom: 1px solid var(--line-soft); text-alig
 thead th { font-weight: 600; color: var(--muted); font-size: 12.5px; background: var(--panel); position: sticky; top: 0; white-space: normal; min-width: 5ch; }
 tbody th[scope="row"] { font-weight: 500; }
 td.num { text-align: right; font-family: var(--mono); font-size: 13px; }
+td.muted { color: var(--muted); }
 tbody tr:last-child th, tbody tr:last-child td { border-bottom: none; }
 figure.matrix tbody th[scope="row"] { position: sticky; left: 0; background: var(--panel); }
 tr.sub th, tr.sub td { background: var(--sub); font-weight: 600; }
@@ -3311,6 +3312,7 @@ var WATERY_SIGNS = [3, 7, 11];
 var signQuality = (s) => MOVABLE.includes(s) ? "movable" : FIXED.includes(s) ? "fixed" : "dual";
 var EXALTATION_DEG = [10, 33, 298, 165, 95, 357, 200];
 var EXALTATION_SIGN = [0, 1, 9, 5, 3, 11, 6];
+var DEBILITATION_SIGN = [6, 7, 3, 11, 9, 5, 0];
 var MOOLATRIKONA = [[4, 0, 20], [1, 3, 30], [0, 0, 12], [5, 15, 20], [8, 0, 10], [6, 0, 15], [10, 0, 20]];
 var OWN_SIGNS = [[4], [3], [0, 7], [2, 5], [8, 11], [1, 6], [9, 10]];
 var NATURAL_RELATION = [
@@ -3646,6 +3648,7 @@ function compoundMatrix(signs) {
 }
 var isOwnSign = (p, sign) => p <= 6 && OWN_SIGNS[p].includes(sign);
 var isExaltationSign = (p, sign) => p <= 6 && EXALTATION_SIGN[p] === sign;
+var isDebilitationSign = (p, sign) => p <= 6 && DEBILITATION_SIGN[p] === sign;
 function isMoolatrikona(p, sign, deg = null) {
   if (p > 6) return false;
   const [s, from, to] = MOOLATRIKONA[p];
@@ -3729,8 +3732,9 @@ function sputaDrishti(d, q, special = "parasara") {
       else if (d >= 210 && d < 240) v = 45 + (d - 210) / 2;
       else if (d >= 240 && d < 270) v = 60 - (d - 240);
     }
+    v = Math.min(60, v);
   }
-  return Math.max(0, Math.min(60, v));
+  return Math.max(0, v);
 }
 function meeusMeanLongitudes(T) {
   const L = (a, b, c, d) => norm360(a + b * T + c * T * T + d * T * T * T);
@@ -4321,6 +4325,49 @@ function ashtakavargaFromChart(chart, options = {}) {
   return computeAshtakavarga(signs, SEVEN.map((p) => chart.planets[p].sign), options);
 }
 
+// src/tables.js
+function aspectMatrix(chart, special = "parasara") {
+  const P = chart.planets;
+  const targets = [...NINE.map((p) => P[p].lon), chart.asc];
+  const rows = {};
+  for (const q of NINE) {
+    rows[q] = targets.map((lon, i) => i === q ? null : sputaDrishti(arc(P[q].lon, lon), q === RAHU || q === KETU ? -1 : q, special));
+  }
+  return { rows, columns: [...NINE, "lagna"] };
+}
+function relationshipTables(chart) {
+  const signs = SEVEN.map((p) => chart.planets[p].sign);
+  const natural = {}, temporal = {};
+  for (const p of SEVEN) {
+    natural[p] = {};
+    temporal[p] = {};
+    for (const q of SEVEN) if (p !== q) {
+      natural[p][q] = naturalRelation(p, q);
+      temporal[p][q] = temporalFriend(signs[p], signs[q]) ? "F" : "E";
+    }
+  }
+  return { natural, temporal, compound: compoundMatrix(signs) };
+}
+function dignityTable(chart) {
+  const signs = SEVEN.map((p) => chart.planets[p].sign);
+  const compound = compoundMatrix(signs);
+  return SEVEN.map((p) => {
+    const sign = chart.planets[p].sign, deg = chart.planets[p].deg, lord = SIGN_LORD[sign];
+    return {
+      planet: p,
+      sign,
+      lord,
+      exalted: isExaltationSign(p, sign),
+      debilitated: isDebilitationSign(p, sign),
+      own: isOwnSign(p, sign),
+      moolatrikona: isMoolatrikona(p, sign, deg),
+      moolatrikonaSign: isMoolatrikona(p, sign),
+      natural: lord === p ? null : naturalRelation(p, lord),
+      compound: lord === p ? null : compound[p][lord]
+    };
+  });
+}
+
 // src/render.js
 var esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
 var n2 = (x) => x == null || !Number.isFinite(x) ? "\u2014" : (Math.round(x * 100) / 100).toFixed(2);
@@ -4344,6 +4391,9 @@ function renderAll({ chart, shadbala, upagrahas, avasthas, ashtakavarga, meta })
   const parts = [];
   parts.push(renderHeader(c));
   parts.push(renderPlacements(c));
+  parts.push(renderDignities(c));
+  parts.push(renderRelationships(c));
+  parts.push(renderAspects(c, shadbala.options.drishtiSpecial));
   parts.push(renderUpagrahas(c, upagrahas));
   parts.push(renderShadbala(c, shadbala));
   parts.push(renderIshtaKashta(shadbala));
@@ -4456,6 +4506,34 @@ function renderAshtakavarga(av) {
   eka = eka.replace('<tr><th scope="row">Sarvashtakavarga</th>', '<tr class="total"><th scope="row">Sarvashtakavarga</th>');
   const pindas = table("", ["", "Rasi pinda", "Graha pinda", "Shodhya pinda"], SEVEN.map((p) => [pname(p), intCell(av.rasiPinda[p]), intCell(av.grahaPinda[p]), intCell(av.shodhyaPinda[p])]));
   return `<section id="ashtakavarga"><h2>Ashtakavarga</h2>${bav}<h2>After Trikona shodhana</h2>${trik}<h2>After Ekadhipatya shodhana</h2>${eka}<h2>Shodhya pindas</h2>${pindas}</section>`;
+}
+var REL_WORD = { F: "Friend", N: "Neutral", E: "Enemy", adhimitra: "Great friend", mitra: "Friend", sama: "Neutral", satru: "Enemy", adhisatru: "Great enemy" };
+var yes = (b) => ({ html: b ? "Yes" : "", cls: b ? "" : "muted" });
+function renderDignities(c) {
+  const rows = dignityTable(c).map((d) => [
+    pname(d.planet),
+    txt(SIGN_NAMES[d.sign]),
+    txt(pname(d.lord)),
+    yes(d.exalted),
+    yes(d.debilitated),
+    yes(d.own),
+    yes(d.moolatrikona),
+    txt(d.natural ? REL_WORD[d.natural] : "\u2014"),
+    txt(d.compound ? REL_WORD[d.compound] : "\u2014")
+  ]);
+  return `<section id="dignities"><h2>Dignities</h2>${table("", ["Graha", "Sign", "Sign lord", "Exaltation", "Debilitation", "Own sign", "Moolatrikona", "Natural relation to lord", "Compound relation to lord"], rows)}</section>`;
+}
+function renderRelationships(c) {
+  const r = relationshipTables(c);
+  const head = ["", ...SEVEN.map(pname)];
+  const grid = (m) => SEVEN.map((p) => [pname(p), ...SEVEN.map((q) => txt(p === q ? "\u2014" : REL_WORD[m[p][q]]))]);
+  return `<section id="relationships"><h2>Natural relationships</h2>${table("", head, grid(r.natural), "matrix")}<h2>Temporal relationships</h2>${table("", head, grid(r.temporal), "matrix")}<h2>Compound relationships</h2>${table("", head, grid(r.compound), "matrix")}</section>`;
+}
+function renderAspects(c, special) {
+  const m = aspectMatrix(c, special);
+  const head = ["Aspecting graha", ...NINE.map(pname), "Lagna"];
+  const rows = NINE.map((q) => [pname(q), ...m.rows[q].map((v) => v == null ? txt("\u2014") : num(v))]);
+  return `<section id="aspects"><h2>Aspects</h2>${table("", head, rows, "matrix")}</section>`;
 }
 
 // src/atlas.js

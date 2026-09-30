@@ -86,8 +86,9 @@ export function sputaDrishti(d, q, special = 'parasara') {
       else if (d >= 210 && d < 240) v = 45 + (d - 210) / 2;
       else if (d >= 240 && d < 270) v = 60 - (d - 240);
     }
+    v = Math.min(60, v);
   }
-  return Math.max(0, Math.min(60, v));
+  return Math.max(0, v); // Raman's additive values may exceed 60 (his tables are not capped)
 }
 
 /** Meeus mean longitudes (mean equinox of date), tropical degrees. T in Julian centuries from J2000 (TT). */
