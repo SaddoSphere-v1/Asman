@@ -8,7 +8,7 @@ Single-file HTML (`../graha-bala.html`) that computes, for any birth, exactly wh
 - **Chara karakas**: the eight-karaka scheme (Sun to Saturn and Rahu, Rahu counted from the end of its sign).
 - **Shadbala**: every sub-bala of Sthana (Uchcha, Saptavargaja, Ojhayugma, Kendradi, Drekkana), Dig, Kala (Natonnata, Paksha, Tribhaga, Abda, Masa, Vara, Hora, Ayana, Yuddha), Chesta, Naisargika and Drik; totals in shashtiamsas and rupas, required minimum, ratio, rank. Sun and Moon follow their own rules (Chesta = Ayana / Paksha; Sun's Ayana and Moon's Paksha doubled).
 - **Ishta / Kashta phala** (Raman's method).
-- **Avasthas**: Deeptadi (nine Parashari states) and Lajjitadi (six states, all that apply).
+- **Avasthas**: Deeptadi (nine Parashari states: Deepta for exaltation or moolatrikona, Swastha, then Pramudita / Shanta / Deena / Dukhita / Khala by the compound grade of the sign lord, debilitation as Deena, Vikala with a natural malefic, Kopa when combust; the reading shared by Santhanam's translation and kunjara/jyotish) and Lajjitadi (six states, all that apply).
 
 The page asks for five things only: **Name, Gender, Birthday, Birthtime, Birthplace**. The birthplace is resolved offline by an embedded atlas (GeoNames, every place with population ≥ 5000: coordinates, region, country and time zone; the historical offset comes from the browser's time-zone database). Coordinates such as `13.08, 80.27` are accepted too.
 
@@ -47,6 +47,7 @@ npm test             # parity + regression tests
 - `test/shadbala-raman.test.mjs`: B.V. Raman's own worked example (16 Oct 1918, Bangalore, Raman ayanamsa) — Sthana, Dig, Kala components, Ayana, Chesta (to 0.05), Naisargika and Drik (Raman aspects) reproduce the book; two known book slips (Saturn's Uchcha arithmetic, Mars's unfolded Dig distance) are excluded.
 - `test/upagrahas.test.mjs`: kalavela and Pranapada longitudes against an independent Python implementation of the same rule.
 - `test/lagnas.test.mjs`: Varnada, Sree, Indu, Bhrigu Bindu and the chara karakas against PyJHora; lagna rates. (PyJHora's own time-based lagnas apply the zone offset twice and run Vighati at 15°/min, so those are checked against Jagannatha Hora instead.)
+- `test/avasthas.test.mjs`: rule-level tests of every Deeptadi and Lajjitadi condition on constructed charts.
 - `test/atlas.test.mjs`: place lookup by current name, former name (Madras, Bombay, Bangalore), with region or country, and coordinate fallback.
 
-Conventions not yet verified against a live JHora printout: the mean longitudes used for Chesta bala and the Khala rule of the Deeptadi avasthas. Compare one chart in JHora; each is a one-line default in the engine.
+Readings that differ between sources and are exposed as engine options: the Khala rule of the Deeptadi avasthas (great enemy's sign, default, versus Narasimha Rao's malefic-owned sign), the Ekadhipatya sub-rule for an empty sign with more bindus, and Raman's versus Parasara's special-aspect formulas.

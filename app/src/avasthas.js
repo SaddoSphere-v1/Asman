@@ -1,13 +1,13 @@
-// Deeptadi (BPHS 45.7, nine states, as in P.V.R. Narasimha Rao's book §15.4) and Lajjitadi (BPHS 45.11-18, six states).
+// Deeptadi (BPHS 45.7-10, nine states; readings cross-checked with Santhanam's translation, Narasimha Rao's book and kunjara/jyotish) and Lajjitadi (BPHS 45.11-18, six states).
 import { SEVEN, SUN, MOON, MARS, MERCURY, JUPITER, VENUS, SATURN, RAHU, KETU, WATERY_SIGNS, FULL_ASPECT_HOUSES, SIGN_LORD } from './constants.js';
-import { compoundMatrix, naturalRelation, isExaltationSign, isOwnSign, isMoolatrikona } from './relations.js';
+import { compoundMatrix, naturalRelation, isExaltationSign, isDebilitationSign, isOwnSign, isMoolatrikona } from './relations.js';
 import { beneficsAndMalefics } from './shadbala.js';
 
 export const AVASTHA_DEFAULTS = Object.freeze({
   /** Relationship for Deeptadi grades and Lajjitadi friend/enemy tests: 'compound' (panchadha, PVR) | 'natural' */
   relation: 'compound',
-  /** Khala: 'maleficSign' in a sign owned by a natural malefic (PVR book) | 'adhisatru' sign lord is a great enemy (Santhanam) */
-  khala: 'maleficSign',
+  /** Khala: 'adhisatru' — sign lord is a great enemy (Brihat Parashara Hora Shastra 45.10 per Santhanam; kunjara/jyotish) | 'maleficSign' — a sign owned by a natural malefic (Narasimha Rao's book) */
+  khala: 'adhisatru',
   /** Rahu/Ketu cast a 7th-house aspect for the Lajjitadi tests */
   nodesAspect: true,
   /** Garvita moolatrikona: 'sign' whole sign | 'degrees' */
@@ -48,15 +48,20 @@ export function computeAvasthas(chart, options = {}) {
   for (const p of SEVEN) {
     const sign = P[p].sign, deg = P[p].deg, lord = SIGN_LORD[sign];
     // ---------- Deeptadi ----------
+    // Deepta: exaltation or moolatrikona; Swastha: own sign; Pramudita / Shanta / Deena / Dukhita / Khala by the compound grade of the sign lord
+    // (great friend, friend, neutral, enemy, great enemy); debilitation counts as Deena. Vikala: with a natural malefic. Kopa: combust.
     const states = [], why = [];
-    if (isExaltationSign(p, sign)) { states.push('Deepta'); why.push('exalted'); }
+    if (isExaltationSign(p, sign) || isMoolatrikona(p, sign, deg)) { states.push('Deepta'); why.push(isExaltationSign(p, sign) ? 'exalted' : 'moolatrikona'); }
     else if (isOwnSign(p, sign)) { states.push('Swastha'); why.push('own sign'); }
-    else if (opt.relation === 'compound') { const g = compound[p][lord]; states.push(GRADE[g]); why.push(`${NAME[lord]}'s sign, ${g}`); }
-    else { const n = naturalRelation(p, lord); states.push(GRADE_NATURAL[n]); why.push(`${NAME[lord]}'s sign, natural ${n === 'F' ? 'friend' : n === 'N' ? 'neutral' : 'enemy'}`); }
+    else if (isDebilitationSign(p, sign)) { states.push('Deena'); why.push('debilitated'); }
+    else if (opt.relation === 'compound') {
+      const g = compound[p][lord];
+      const name = g === 'adhisatru' && opt.khala === 'adhisatru' ? 'Khala' : GRADE[g];
+      states.push(name); why.push(`${NAME[lord]}'s sign, ${g}`);
+    } else { const n = naturalRelation(p, lord); states.push(GRADE_NATURAL[n]); why.push(`${NAME[lord]}'s sign, natural ${n === 'F' ? 'friend' : n === 'N' ? 'neutral' : 'enemy'}`); }
     const withMalefic = naturalMalefics.filter(q => q !== p && conjunct(p, q));
     if (withMalefic.length) { states.push('Vikala'); why.push(`with ${withMalefic.map(q => NAME[q]).join(', ')}`); }
-    const khala = opt.khala === 'adhisatru' ? compound[p][lord] === 'adhisatru' && lord !== p : MALEFIC_SIGNS.includes(sign) && !isOwnSign(p, sign);
-    if (khala) { states.push('Khala'); why.push(opt.khala === 'adhisatru' ? "great enemy's sign" : "malefic's sign"); }
+    if (opt.khala === 'maleficSign' && MALEFIC_SIGNS.includes(sign) && !isOwnSign(p, sign) && !states.includes('Khala')) { states.push('Khala'); why.push("malefic's sign"); }
     if (P[p].combust) { states.push('Kopa'); why.push('combust'); }
     deeptadi[p] = { states, why, state: states.join(', ') };
 
