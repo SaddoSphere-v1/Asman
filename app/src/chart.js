@@ -7,8 +7,9 @@ import {
 } from './constants.js';
 
 export const DEFAULT_OPTIONS = Object.freeze({
-  /** 'sripati' (Porphyry madhyas, JHora default) | 'equal' (lagna in the middle of house 1) | 'kp' (Placidus cusps as house starts) */
-  houseSystem: 'sripati',
+  /** Bhava system: 'equal' — Parashara's bhava chalit, Lagna degree at the middle of the first bhava, 30° houses (default) |
+   *  'kp' — Placidus cusps as house starts | 'sripati' — Porphyry madhyas (kept only for the Raman / Jain regression tests) */
+  houseSystem: 'equal',
   /** Planetary war winner: 'lowerLongitude' (B.V. Raman) | 'north' (greater ecliptic latitude, Surya Siddhanta) | 'higherLongitude' */
   warWinner: 'lowerLongitude',
   /** Geometric (true) positions without light-time/aberration, as JHora (SEFLG_TRUEPOS); false → apparent positions */

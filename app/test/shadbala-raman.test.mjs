@@ -12,7 +12,7 @@ const closeAll = (arr, exp, tol, msg, skip = []) => arr.forEach((v, i) => { if (
 
 test('Raman example: positions and Sthana bala', async () => {
   const eph = await getEphRaman();
-  const chart = computeChart(eph, RAMAN);
+  const chart = computeChart(eph, RAMAN, { houseSystem: 'sripati' }); // Raman's Dig bala uses Sripati bhava madhyas
   const exp = [180 + 53 / 60 + 55 / 3600, 311 + 17 / 60 + 19 / 3600, 229 + 30 / 60 + 34 / 3600, 181 + 31 / 60 + 34 / 3600, 84 + 0 / 60 + 49 / 3600, 171 + 9 / 60 + 56 / 3600, 124 + 22 / 60 + 41 / 3600];
   exp.forEach((e, i) => close(chart.planets[i].lon, e, 0.06, `longitude ${i}`)); // Raman's 1918 ephemeris vs Swiss Ephemeris
   const sb = computeShadbala(chart).components;
@@ -26,7 +26,7 @@ test('Raman example: positions and Sthana bala', async () => {
 
 test('Raman example: Dig, Kala, Chesta, Naisargika, Drik', async () => {
   const eph = await getEphRaman();
-  const chart = computeChart(eph, RAMAN);
+  const chart = computeChart(eph, RAMAN, { houseSystem: 'sripati' }); // Raman's Dig bala uses Sripati bhava madhyas
   const sb = computeShadbala(chart, { drishtiSpecial: 'raman' }).components;
   closeAll(sb.dig, [48.10, 31.56, 64.30, 21.09, 11.50, 15.15, 58.02], 0.6, 'dig', [2]); // Mars: book did not fold 192.9° to 167.1°
   closeAll(sb.natonnata, [48.32, 11.68, 11.68, 60, 48.32, 48.32, 11.68], 0.4, 'natonnata');

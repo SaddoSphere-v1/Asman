@@ -51,7 +51,7 @@ test('Hindu-day sunrise/sunset/next sunrise match pyswisseph (disc centre, no re
   }
 });
 
-test('sanity: sign, nakshatra, house and Sripati bhavas are consistent', async () => {
+test('sanity: sign, nakshatra, house and equal bhavas are consistent', async () => {
   const eph = await getEph();
   const c = computeChart(eph, fixtures[0].input);
   for (const P of c.planets) {
@@ -59,7 +59,7 @@ test('sanity: sign, nakshatra, house and Sripati bhavas are consistent', async (
     assert.ok(P.nakshatra.pada >= 1 && P.nakshatra.pada <= 4);
     assert.ok(P.house >= 1 && P.house <= 12 && P.bhava >= 1 && P.bhava <= 12);
   }
-  assert.ok(Math.abs(c.bhavas.madhya[1] - c.asc) < 1e-9 && Math.abs(c.bhavas.madhya[10] - c.mc) < 1e-9);
+  assert.ok(Math.abs(c.bhavas.madhya[1] - c.asc) < 1e-9 && Math.abs(((c.bhavas.madhya[10] - c.asc - 270) % 360 + 360) % 360) < 1e-9);
   // consecutive madhyas increase around the circle
   let total = 0; for (let i = 1; i <= 12; i++) total += ((c.bhavas.madhya[i % 12 + 1] - c.bhavas.madhya[i]) % 360 + 360) % 360;
   assert.ok(Math.abs(total - 360) < 1e-6);

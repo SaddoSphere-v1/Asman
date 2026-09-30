@@ -13,7 +13,7 @@ const closeAll = (arr, exp, tol, msg) => arr.forEach((v, i) => close(v, exp[i], 
 
 test('V.P. Jain example: Sthana bala components', async () => {
   const eph = await getEph();
-  const sb = computeShadbala(computeChart(eph, JAIN)).components;
+  const sb = computeShadbala(computeChart(eph, JAIN, { houseSystem: 'sripati' })).components;
   closeAll(sb.uchcha, [14.54, 32.17, 4.94, 58.16, 34.85, 3.09, 48.81], 0.02, 'uchcha');
   closeAll(sb.saptavargaja, [127.5, 30, 135, 120, 58.13, 150, 82.5], 0.01, 'saptavargaja');
   closeAll(sb.ojhayugma, [15, 0, 15, 0, 0, 15, 0], 0, 'ojhayugma');
@@ -24,7 +24,7 @@ test('V.P. Jain example: Sthana bala components', async () => {
 
 test('V.P. Jain example: Dig, Kala components, Naisargika, Drik (Raman additive aspects)', async () => {
   const eph = await getEph();
-  const chart = computeChart(eph, JAIN);
+  const chart = computeChart(eph, JAIN, { houseSystem: 'sripati' }); // the book's Dig bala uses Sripati bhava madhyas
   const sb = computeShadbala(chart, { drishtiSpecial: 'raman' }).components;
   closeAll(sb.dig, [6.59, 12.22, 20.99, 31.97, 31.99, 53.29, 26.67], 0.03, 'dig');
   closeAll(sb.natonnata, [6.1, 53.9, 53.9, 60.0, 6.1, 6.1, 53.9], 0.15, 'natonnata (local apparent time)');
@@ -41,7 +41,7 @@ test('V.P. Jain example: Dig, Kala components, Naisargika, Drik (Raman additive 
 
 test('V.P. Jain example: Chesta bala of the five planets within textbook tolerance', async () => {
   const eph = await getEph();
-  const sb = computeShadbala(computeChart(eph, JAIN)).components;
+  const sb = computeShadbala(computeChart(eph, JAIN, { houseSystem: 'sripati' })).components;
   // Book: [-, -, 20.93, 28.76, 8.43, 28.18, 5.05]; Raman's linear mean elements vs the book's tables differ by a few shashtiamsas for Mercury.
   closeAll(sb.chesta.slice(2), [20.93, 28.76, 8.43, 28.18, 5.05], 5, 'chesta');
   assert.equal(sb.chestaInTotal[0], 0); assert.equal(sb.chestaInTotal[1], 0);
@@ -67,7 +67,7 @@ test('Surya-Siddhanta kranti table and Raman ahargana', () => {
 
 test('Ishta/Kashta are bounded and consistent', async () => {
   const eph = await getEph();
-  const sb = computeShadbala(computeChart(eph, JAIN));
+  const sb = computeShadbala(computeChart(eph, JAIN, { houseSystem: 'sripati' }));
   for (let i = 0; i < 7; i++) {
     const u = sb.ishtaKashta.uchcha[i], c = sb.ishtaKashta.chesta[i];
     assert.ok(u >= 0 && u <= 60 && c >= 0 && c <= 60);
