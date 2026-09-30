@@ -88,7 +88,7 @@ function compute() {
       lat: place.lat, lon: place.lon, alt: 0, zone: place.tz, place: place.label,
       name: $('name').value.trim() || null, gender: $('gender').value || null,
     };
-    if (year < 1800 || year > 2399) status.textContent = 'Outside 1800 to 2399: the built-in Moshier theory is used instead of the data files.';
+    if (year < 1800 || year > 2399) status.textContent = 'Date outside 1800 to 2399: reduced precision.';
     else status.textContent = '';
     const chart = computeChart(eph, input);
     const shadbala = computeShadbala(chart);

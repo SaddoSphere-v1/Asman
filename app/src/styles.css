@@ -20,7 +20,8 @@ body { margin: 0; background: var(--bg); color: var(--ink); font: 14px/1.45 var(
 main { max-width: 1180px; margin: 0 auto; padding: 20px 16px 48px; }
 h1 { font-size: 20px; font-weight: 600; margin: 0 0 12px; letter-spacing: 0.01em; }
 h1 small { font-weight: 400; color: var(--muted); font-size: 13px; margin-left: 8px; }
-h2 { font-size: 15px; font-weight: 600; margin: 28px 0 10px; padding-bottom: 6px; border-bottom: 1px solid var(--line); }
+h2 { font-size: 15px; font-weight: 600; margin: 26px 0 10px; padding-bottom: 6px; border-bottom: 1px solid var(--line); }
+section#header { margin-top: 22px; }
 p.lede { color: var(--muted); margin: 0 0 16px; }
 
 form.inputs { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px 12px; align-items: start; }
