@@ -1,0 +1,138 @@
+[
+ {
+  "input": {
+   "id": "chennai-1985",
+   "year": 1985,
+   "month": 6,
+   "day": 15,
+   "hour": 14,
+   "minute": 30,
+   "second": 0,
+   "utcOffset": 5.5,
+   "lat": 13.0827,
+   "lon": 80.2707
+  },
+  "tithi": 28,
+  "karana": 54,
+  "yoga": 6
+ },
+ {
+  "input": {
+   "id": "delhi-1981-night",
+   "year": 1981,
+   "month": 9,
+   "day": 13,
+   "hour": 1,
+   "minute": 30,
+   "second": 0,
+   "utcOffset": 5.5,
+   "lat": 28.65,
+   "lon": 77.2167
+  },
+  "tithi": 14,
+  "karana": 27,
+  "yoga": 7
+ },
+ {
+  "input": {
+   "id": "bangalore-1918",
+   "year": 1918,
+   "month": 10,
+   "day": 16,
+   "hour": 14,
+   "minute": 22,
+   "second": 16,
+   "utcOffset": 5.5,
+   "lat": 13.0,
+   "lon": 77.5833
+  },
+  "tithi": 11,
+  "karana": 21,
+  "yoga": 9
+ },
+ {
+  "input": {
+   "id": "sydney-1999-dst",
+   "year": 1999,
+   "month": 12,
+   "day": 31,
+   "hour": 23,
+   "minute": 59,
+   "second": 0,
+   "utcOffset": 11.0,
+   "lat": -33.8688,
+   "lon": 151.2093
+  },
+  "tithi": 25,
+  "karana": 48,
+  "yoga": 6
+ },
+ {
+  "input": {
+   "id": "reykjavik-2010-summer",
+   "year": 2010,
+   "month": 6,
+   "day": 21,
+   "hour": 3,
+   "minute": 15,
+   "second": 0,
+   "utcOffset": 0.0,
+   "lat": 64.1466,
+   "lon": -21.9426
+  },
+  "tithi": 10,
+  "karana": 19,
+  "yoga": 18
+ },
+ {
+  "input": {
+   "id": "newyork-1969",
+   "year": 1969,
+   "month": 7,
+   "day": 20,
+   "hour": 22,
+   "minute": 56,
+   "second": 0,
+   "utcOffset": -4.0,
+   "lat": 40.7128,
+   "lon": -74.006
+  },
+  "tithi": 7,
+  "karana": 12,
+  "yoga": 19
+ },
+ {
+  "input": {
+   "id": "ujjain-2000-noon",
+   "year": 2000,
+   "month": 1,
+   "day": 1,
+   "hour": 12,
+   "minute": 0,
+   "second": 0,
+   "utcOffset": 5.5,
+   "lat": 23.1765,
+   "lon": 75.7885
+  },
+  "tithi": 26,
+  "karana": 50,
+  "yoga": 6
+ },
+ {
+  "input": {
+   "id": "london-1900",
+   "year": 1900,
+   "month": 1,
+   "day": 1,
+   "hour": 0,
+   "minute": 0,
+   "second": 1,
+   "utcOffset": 0.0,
+   "lat": 51.5074,
+   "lon": -0.1278
+  },
+  "tithi": 30,
+  "karana": 58,
+  "yoga": 11
+ }
+]

@@ -1,12 +1,12 @@
 // HTML + plain-text rendering of the results. No interpretation, tables only.
 import { fmtDMS, fmtHours, formatOffset, localHours } from './time.js';
-import { SEVEN, NINE, PLANET_NAMES, SIGN_NAMES, WEEKDAY_NAMES } from './constants.js';
+import { SEVEN, NINE, RAHU, KETU, PLANET_NAMES, SIGN_NAMES, SIGN_LORD, WEEKDAY_NAMES } from './constants.js';
 import { aspectMatrix, relationshipTables, dignityTable } from './tables.js';
-import { divisionalCharts, VARGA_NAMES } from './vargas.js';
+import { divisionalCharts } from './vargas.js';
 import { specialLagnaTables } from './lagnatables.js';
 import { computeArgala, ARGALA_HOUSES } from './argala.js';
-import { computeArudhas, bhavaArudhas, signAspects, countSigns, ARUDHA_NAMES } from './arudhas.js';
-import { nakshatraOf, wholeSignHouse, bhavaOf } from './chart.js';
+import { computeArudhas, bhavaArudhas, signAspects } from './arudhas.js';
+import { varnadaLagnas, karakamsa } from './lagnas.js';
 
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const n2 = (x) => (x == null || !Number.isFinite(x) ? '—' : (Math.round(x * 100) / 100).toFixed(2));
@@ -34,10 +34,11 @@ export function renderAll({ chart, shadbala, upagrahas, avasthas, ashtakavarga, 
   const parts = [];
   parts.push(renderHeader(c));
   parts.push(renderPlacements(c, karakas));
-  if (lagnas) parts.push(renderLagnas(c, lagnas, ashtakavarga, shadbala.options.drishtiSpecial));
+  if (lagnas) parts.push(renderLagnas(c, lagnas, shadbala.options.drishtiSpecial));
   const extra = [...(upagrahas || []).map(u => ({ name: u.name, lon: u.lon, group: 'upagraha' })), ...(lagnas || []).map(l => ({ name: l.name, lon: l.lon, group: 'lagna' }))];
   const dv = divisionalCharts(c, extra);
-  parts.push(renderArudhas(c, dv));
+  parts.push(renderArudhas(c));
+  parts.push(renderKarakamsa(c));
   parts.push(renderDivisional(c, dv));
   parts.push(renderDignities(c));
   parts.push(renderRelationships(c));
@@ -62,6 +63,8 @@ function renderHeader(c) {
     ['Sunrise / sunset', d.polar ? '—' : `${fmtHours(localHours(d.sunrise, off))} / ${fmtHours(localHours(d.sunset, off))} · ${d.isDay ? 'day' : 'night'} birth`],
     ['Weekday', WEEKDAY_NAMES[c.weekday]],
     ['Tithi', `${tithiName(c.tithi)} · ${c.waxing ? 'Shukla' : 'Krishna'} paksha`],
+    ['Yoga', c.yoga.name],
+    ['Karana', c.karana.name],
   ];
   return `<section id="header"><dl class="kv">${rows.map(([k, v]) => `<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join('')}</dl></section>`;
 }
@@ -76,7 +79,12 @@ function renderPlacements(c, karakas) {
     const status = [P.retro ? 'retrograde' : '', P.combust ? 'combust' : '', P.war ? (P.war.won ? `wins war against ${pname(P.war.with)}` : `loses war to ${pname(P.war.with)}`) : ''].filter(Boolean).join(', ');
     rows.push([pname(p), txt(signDeg(P.lon)), txt(nak(P.nakshatra)), txt(pname(P.nakshatra.lord)), txt(pname(P.signLord)), txt(String(P.house)), txt(String(P.bhava)), txt(karakaOf[p] || ''), txt(status, 'wrap')]);
   }
-  return `<section id="placements"><h2>Placements</h2>${table('', ['Graha', 'Sign and degree', 'Nakshatra and pada', 'Nakshatra lord', 'Sign lord', 'House', 'Bhava', 'Chara karaka', 'Status'], rows)}</section>`;
+  const placed = (p) => txt(`${signDeg(c.planets[p].lon)} · house ${c.planets[p].house}`);
+  const lords = Array.from({ length: 12 }, (_, i) => {
+    const sign = (c.lagnaSign + i) % 12, lord = SIGN_LORD[sign], co = sign === 7 ? KETU : sign === 10 ? RAHU : null;
+    return [`House ${i + 1}`, txt(SIGN_NAMES[sign]), txt(pname(lord)), placed(lord), co == null ? txt('—', 'muted') : txt(pname(co)), co == null ? txt('—', 'muted') : placed(co)];
+  });
+  return `<section id="placements"><h2>Placements</h2>${table('', ['Graha', 'Sign and degree', 'Nakshatra and pada', 'Nakshatra lord', 'Sign lord', 'House', 'Bhava', 'Chara karaka', 'Status'], rows)}<h2>House lords</h2>${table('', ['House', 'Sign', 'Lord', 'Lord placed', 'Co-lord', 'Co-lord placed'], lords)}</section>`;
 }
 
 function renderUpagrahas(c, ups) {
@@ -170,7 +178,7 @@ function renderRelationships(c) {
   const r = relationshipTables(c);
   const head = ['', ...SEVEN.map(pname)];
   const grid = (m) => SEVEN.map(p => [pname(p), ...SEVEN.map(q => txt(p === q ? '—' : REL_WORD[m[p][q]]))]);
-  return `<section id="relationships"><h2>Natural relationships</h2>${table('', head, grid(r.natural), 'matrix')}<h2>Temporal relationships</h2>${table('', head, grid(r.temporal), 'matrix')}<h2>Compound relationships</h2>${table('', head, grid(r.compound), 'matrix')}</section>`;
+  return `<section id="relationships"><h2>Temporal relationships</h2>${table('', head, grid(r.temporal), 'matrix')}<h2>Compound relationships</h2>${table('', head, grid(r.compound), 'matrix')}</section>`;
 }
 
 function renderAspects(c, special) {
@@ -206,40 +214,36 @@ function renderDivisional(c, dv) {
   return html;
 }
 
-function renderLagnas(c, lagnas, ashtakavarga, special) {
-  const T = specialLagnaTables({ chart: c, lagnas, ashtakavarga, special });
+function renderLagnas(c, lagnas, special) {
+  const T = specialLagnaTables({ chart: c, lagnas, special });
   const main = lagnas.map(u => (u.lon == null ? [u.name, txt(u.unavailable || '—', 'wrap'), txt('—'), txt('—'), txt('—'), txt('—'), txt('—')]
     : [u.name, txt(signDeg(u.lon)), txt(nak(u.nakshatra)), txt(pname(u.nakshatra.lord)), txt(pname(u.signLord)), txt(String(u.house)), txt(String(u.bhava))]));
   let html = `<section id="lagnas"><h2>Special lagnas</h2>${table('', ['Lagna', 'Sign and degree', 'Nakshatra and pada', 'Nakshatra lord', 'Sign lord', 'House', 'Bhava'], main)}`;
+  const V = varnadaLagnas(c, lagnas);
+  if (V.length) html += `<h2>Varnada lagnas</h2>${table('', ['House', 'Sign and degree', 'House from Lagna'], V.map(v => [`House ${v.house}`, txt(signDeg(v.lon)), txt(String(v.houseFromLagna))]))}`;
   const avail = T.filter(t => t.lon != null);
   if (!avail.length) return html + '</section>';
   const grahaHead = ['Lagna', ...NINE.map(pname)];
   const withSign = (t) => `${t.name} · ${SIGN_NAMES[t.sign]}`;
   html += `<h2>Houses of the grahas from the special lagnas</h2>${table('', grahaHead, avail.map(t => [withSign(t), ...t.houses.map(h => txt(String(h)))]), 'matrix')}`;
-  html += `<h2>Bhavas of the grahas from the special lagnas</h2>${table('', grahaHead, avail.map(t => [withSign(t), ...t.bhavas.map(h => txt(String(h)))]), 'matrix')}`;
-  const place = (x) => { const st = [x.retro ? 'Retrograde' : null, x.combust ? 'Combust' : null].filter(Boolean).join(', '); return `${SIGN_NAMES[x.sign]} ${fmtDMS(x.deg, 2)}${st ? ' · ' + st : ''}`; };
-  const lordCells = (x) => [txt(pname(x.planet)), txt(place(x)), txt(String(x.house)), txt(x.dignity ? DIGNITY_WORD[x.dignity] : '—')];
-  html += `<h2>Sign lords of the special lagnas</h2>${table('', ['Lagna', 'Sign lord', 'Placement', 'House from the lagna', 'Dignity'], avail.map(t => [withSign(t), ...lordCells(t.lord)]))}`;
-  html += `<h2>Nakshatra lords of the special lagnas</h2>${table('', ['Lagna', 'Nakshatra lord', 'Placement', 'House from the lagna', 'Dignity'], avail.map(t => [withSign(t), ...lordCells(t.nakshatraLord)]))}`;
   html += `<h2>Aspects on the special lagnas</h2>${table('', [...grahaHead, 'Total'], avail.map(t => [withSign(t), ...t.aspects.map(v => num(v)), num(t.aspectTotal)]), 'matrix')}`;
-  if (ashtakavarga) html += `<h2>Ashtakavarga bindus of the special lagnas</h2>${table('', ['Lagna', ...SEVEN.map(pname), 'Total', 'After shodhana'], avail.map(t => [withSign(t), ...t.bindus.perPlanet.map(b => txt(String(b))), txt(String(t.bindus.total)), txt(String(t.bindus.reduced))]), 'matrix')}`;
-  html += `<h2>Special lagnas in the divisional charts</h2>${table('', ['Chart', ...avail.map(t => t.name)], avail[0].vargas.map((v, k) => [VARGA_NAMES[v.D], ...avail.map(t => txt(SIGN_NAMES[t.vargas[k].sign]))]), 'matrix')}`;
   return html + '</section>';
 }
 
-function renderArudhas(c, dv) {
+function renderArudhas(c) {
   const A = computeArudhas(c);
-  const withSign = (a) => `${a.name} · ${SIGN_NAMES[a.sign]}`;
   const main = A.bhava.map(a => [a.name, txt(`${a.index} · ${SIGN_NAMES[a.houseSign]}`), txt(SIGN_NAMES[a.sign]), txt(pname(a.lord)), txt(String(a.house)), txt(grahaList(a.occupants), 'wrap'), txt(grahaList(a.aspecting), 'wrap')]);
   let html = `<section id="arudhas"><h2>Arudha padas</h2>${table('', ['Arudha', 'Of house', 'Sign', 'Sign lord', 'House from Lagna', 'Grahas in the sign', 'Grahas aspecting the sign'], main)}`;
-  const lrows = A.bhava.map((a, i) => { const lon = A.longitudes[i], nk = nakshatraOf(lon); return [a.name, txt(signDeg(lon)), txt(nak(nk)), txt(pname(nk.lord)), txt(String(wholeSignHouse(lon, c.lagnaSign))), txt(String(bhavaOf(lon, c.bhavas)))]; });
-  html += `<h2>Padamsa (arudha longitudes)</h2>${table('', ['Arudha', 'Sign and degree', 'Nakshatra and pada', 'Nakshatra lord', 'House', 'Bhava'], lrows)}`;
-  html += `<h2>Houses of the grahas from the arudha padas</h2>${table('', ['Arudha', ...NINE.map(pname)], A.bhava.map(a => [withSign(a), ...NINE.map(p => txt(String(countSigns(a.sign, c.planets[p].sign))))]), 'matrix')}`;
   html += `<h2>Graha arudhas</h2>${table('', ['Graha', 'Sign owned', 'Arudha sign', 'House from Lagna', 'Grahas in the sign', 'Grahas aspecting the sign'], A.graha.map(g => [pname(g.planet), txt(SIGN_NAMES[g.ownSign]), txt(SIGN_NAMES[g.sign]), txt(String(g.house)), txt(grahaList(g.occupants), 'wrap'), txt(grahaList(g.aspecting), 'wrap')]))}`;
-  const inVargas = dv.charts.map(v => { const ar = bhavaArudhas(vargaPositions(v)); return [v.name, ...ar.map(a => txt(SIGN_NAMES[a.sign]))]; });
-  html += `<h2>Arudha padas in the divisional charts</h2>${table('', ['Chart', ...ARUDHA_NAMES.slice(0, 6)], inVargas.map(r => r.slice(0, 7)), 'matrix')}`;
-  html += table('', ['Chart', ...ARUDHA_NAMES.slice(6)], inVargas.map(r => [r[0], ...r.slice(7)]), 'matrix');
   return html + '</section>';
+}
+
+function renderKarakamsa(c) {
+  const K = karakamsa(c);
+  const summary = table('', ['Atmakaraka', 'Karakamsa', 'Sign lord', 'Grahas in Karakamsa (rasi)', 'Grahas aspecting Karakamsa (rasi)', 'Grahas in Swamsa (navamsa)', 'Grahas aspecting Swamsa (navamsa)'],
+    [[pname(K.atmakaraka), txt(SIGN_NAMES[K.sign]), txt(pname(K.lord)), txt(grahaList(K.rasiOccupants), 'wrap'), txt(grahaList(K.rasiAspecting), 'wrap'), txt(grahaList(K.navamsaOccupants), 'wrap'), txt(grahaList(K.navamsaAspecting), 'wrap')]]);
+  const rows = K.planets.map(x => [pname(x.planet), txt(SIGN_NAMES[x.rasiSign]), txt(String(x.rasiHouse)), txt(SIGN_NAMES[x.navamsaSign]), txt(String(x.navamsaHouse))]);
+  return `<section id="karakamsa"><h2>Karakamsa</h2>${summary}${table('', ['Graha', 'Rasi sign', 'House from Karakamsa', 'Navamsa sign', 'House from Swamsa'], rows)}</section>`;
 }
 
 function argalaCell(a) {

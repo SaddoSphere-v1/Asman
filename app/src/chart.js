@@ -3,7 +3,7 @@ import { SE } from './sweph.js';
 import { norm360, sep, arc, weekdayOfJd, calendarDate } from './time.js';
 import {
   NINE, SEVEN, SUN, MOON, MARS, MERCURY, JUPITER, VENUS, SATURN, RAHU, KETU, FIVE_TARA,
-  SE_BODY, SIGN_LORD, NAKSHATRA_NAMES, nakshatraLord, COMBUST_ORB, WAR_ORB, WEEKDAY_LORD,
+  SE_BODY, SIGN_LORD, NAKSHATRA_NAMES, nakshatraLord, COMBUST_ORB, WAR_ORB, WEEKDAY_LORD, YOGA_NAMES, karanaName,
 } from './constants.js';
 
 export const DEFAULT_OPTIONS = Object.freeze({
@@ -192,6 +192,8 @@ export function computeChart(eph, input, options = {}) {
   const elong = arc(planets[SUN].lon, planets[MOON].lon);
   const tithi = Math.floor(elong / 12) + 1; // 1..30
   const waxing = tithi <= 15;
+  const karanaIndex = Math.floor(elong / 6); // 0..59, Kimstughna first
+  const yogaIndex = Math.floor(norm360(planets[SUN].lon + planets[MOON].lon) / (360 / 27)); // 0..26, Vishkambha first
 
   return {
     input: { ...input }, options: opt, jdUt, jdLocalMidnightUt, deltaT, ayanamsa,
@@ -199,5 +201,6 @@ export function computeChart(eph, input, options = {}) {
     equationOfTime: eph.timeEqu(jdUt), // days, apparent − mean
     planets, lagna, asc, mc, lagnaSign, placidusCusps: h.cusps, bhavas,
     wars, day, weekday, weekdayLord, tithi, waxing, elongation: elong,
+    karana: { index: karanaIndex, name: karanaName(karanaIndex) }, yoga: { index: yogaIndex, name: YOGA_NAMES[yogaIndex] },
   };
 }

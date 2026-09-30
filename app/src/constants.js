@@ -74,3 +74,10 @@ export const FULL_ASPECT_HOUSES = {
 };
 
 export const UPAGRAHA_NAMES = ['Dhuma', 'Vyatipata', 'Parivesha', 'Indrachapa', 'Upaketu', 'Kala', 'Mrityu', 'Ardhaprahara', 'Yamaghantaka', 'Gulika', 'Mandi', 'Pranapada'];
+
+/** The 27 nitya yogas (Sun + Moon), Vishkambha first. */
+export const YOGA_NAMES = ['Vishkambha', 'Priti', 'Ayushman', 'Saubhagya', 'Shobhana', 'Atiganda', 'Sukarma', 'Dhriti', 'Shula', 'Ganda', 'Vriddhi', 'Dhruva', 'Vyaghata', 'Harshana', 'Vajra', 'Siddhi', 'Vyatipata', 'Variyan', 'Parigha', 'Shiva', 'Siddha', 'Sadhya', 'Shubha', 'Shukla', 'Brahma', 'Indra', 'Vaidhriti'];
+/** Karana of half-tithi k (0..59): Kimstughna first, the seven movable karanas eight times, then Shakuni, Chatushpada and Naga. */
+const KARANA_MOVABLE = ['Bava', 'Balava', 'Kaulava', 'Taitila', 'Gara', 'Vanija', 'Vishti'];
+const KARANA_FIXED = { 0: 'Kimstughna', 57: 'Shakuni', 58: 'Chatushpada', 59: 'Naga' };
+export const karanaName = (k) => KARANA_FIXED[k] ?? KARANA_MOVABLE[(k - 1) % 7];

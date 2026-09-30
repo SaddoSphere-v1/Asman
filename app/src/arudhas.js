@@ -1,10 +1,8 @@
 // Arudha padas (Jaimini Sutras 1.1.29-30, BPHS 29): bhava arudhas of the twelve houses and graha arudhas of the nine
 // grahas, with the exception (a pada falling in the 1st or 7th from its starting sign moves ten signs on), Jaimini's
-// stronger-co-lord rule for Scorpio (Mars / Ketu) and Aquarius (Saturn / Rahu), arudha longitudes (the lord reflected
-// about the bhava madhya, as Jagannatha Hora), and rasi drishti (sign aspects) used by those rules.
+// stronger-co-lord rule for Scorpio (Mars / Ketu) and Aquarius (Saturn / Rahu), and rasi drishti (sign aspects).
 import { MARS, MERCURY, JUPITER, SATURN, RAHU, KETU, SUN, MOON, VENUS, NINE, SIGN_LORD, ODD_SIGN, signQuality } from './constants.js';
 import { isExaltationSign } from './relations.js';
-import { norm360, arc } from './time.js';
 
 export const ARUDHA_DEFAULTS = Object.freeze({
   /** 'tenth': a pada in the 1st or 7th from its start moves to the 10th from there (Parasara, Jaimini) | 'none' */
@@ -110,21 +108,8 @@ export function grahaArudhas(pos, options = {}) {
   });
 }
 
-/** Arudha longitudes (Jagannatha Hora): lord reflected about the equal bhava madhya; a result inside the 1st or 7th bhava span moves back 90°. */
-export function arudhaLongitudes(chart, arudhas, options = {}) {
-  const opt = { ...ARUDHA_DEFAULTS, ...options };
-  return arudhas.map((a, i) => {
-    const madhya = norm360(chart.asc + 30 * i), start = norm360(madhya - 15);
-    let lon = norm360(2 * chart.planets[a.lord].lon - madhya);
-    const d = arc(start, lon);
-    if (opt.exception === 'tenth' && (d < 30 || (d >= 180 && d < 210))) lon = norm360(lon - 90);
-    return lon;
-  });
-}
-
 export function computeArudhas(chart, options = {}) {
   const opt = { ...ARUDHA_DEFAULTS, ...options };
   const pos = positionsOf(chart);
-  const bhava = bhavaArudhas(pos, opt);
-  return { bhava, graha: grahaArudhas(pos, opt), longitudes: arudhaLongitudes(chart, bhava, opt), options: opt };
+  return { bhava: bhavaArudhas(pos, opt), graha: grahaArudhas(pos, opt), options: opt };
 }

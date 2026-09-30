@@ -1,7 +1,10 @@
-// Special lagnas (Bhava, Hora, Ghati, Vighati, Pranapada, Varnada, Sree, Indu, Kunda, Bhrigu Bindu) and the eight chara karakas.
+// Special lagnas (Bhava, Hora, Ghati, Vighati, Pranapada, Varnada, Sree, Indu, Kunda, Bhrigu Bindu), the Varnada lagnas of the
+// twelve houses, the eight chara karakas, and Karakamsa / Swamsa.
 import { SE } from './sweph.js';
 import { norm360, arc } from './time.js';
-import { SUN, MOON, RAHU, SIGN_LORD, ODD_SIGN, signQuality } from './constants.js';
+import { SUN, MOON, RAHU, NINE, SIGN_LORD, ODD_SIGN, signQuality } from './constants.js';
+import { navamsaSign } from './vargas.js';
+import { countSigns, signAspects } from './arudhas.js';
 import { nakshatraOf, wholeSignHouse, bhavaOf } from './chart.js';
 
 export const LAGNA_DEFAULTS = Object.freeze({
@@ -39,14 +42,8 @@ export function computeSpecialLagnas(eph, chart, options = {}) {
   }
 
   // Varnada lagna (Raman / Narasimha Rao): counts from Aries for odd signs, from Pisces backwards for even; add when the parities agree, else subtract.
-  if (horaLagnaSign != null) {
-    const L = chart.lagnaSign, H = horaLagnaSign;
-    const count = (s) => (ODD_SIGN(s) ? s + 1 : 12 - s);
-    let n = ODD_SIGN(L) === ODD_SIGN(H) ? (count(L) + count(H)) % 12 : Math.abs(count(L) - count(H)) % 12;
-    if (n === 0) n = 12;
-    const sign = ODD_SIGN(L) ? n - 1 : (12 - n) % 12;
-    push('Varnada lagna', sign * 30 + chart.lagna.deg);
-  } else unavailable('Varnada lagna', 'no sunrise at this latitude');
+  if (horaLagnaSign != null) push('Varnada lagna', varnadaOfHouse(chart, horaLagnaSign, 1).lon);
+  else unavailable('Varnada lagna', 'no sunrise at this latitude');
 
   // Sree lagna: Lagna + (fraction of the Moon's nakshatra elapsed) × 360°.
   const nk = P[MOON].nakshatra;
@@ -63,6 +60,36 @@ export function computeSpecialLagnas(eph, chart, options = {}) {
   // Bhrigu Bindu: midpoint of the arc from Rahu forward to the Moon.
   push('Bhrigu Bindu', P[RAHU].lon + arc(P[RAHU].lon, P[MOON].lon) / 2);
   return out;
+}
+
+/** Varnada of house n (1..12): the nth signs from the Lagna and from the Hora lagna, worked as for the Lagna; the Lagna's degree is kept. */
+function varnadaOfHouse(chart, horaLagnaSign, n) {
+  const L = (chart.lagnaSign + n - 1) % 12, H = (horaLagnaSign + n - 1) % 12;
+  const count = (s) => (ODD_SIGN(s) ? s + 1 : 12 - s);
+  let k = ODD_SIGN(L) === ODD_SIGN(H) ? (count(L) + count(H)) % 12 : Math.abs(count(L) - count(H)) % 12;
+  if (k === 0) k = 12;
+  const sign = ODD_SIGN(L) ? k - 1 : (12 - k) % 12;
+  return { house: n, sign, deg: chart.lagna.deg, lon: norm360(sign * 30 + chart.lagna.deg), houseFromLagna: countSigns(chart.lagnaSign, sign) };
+}
+
+/** Varnada lagnas of the twelve houses; [] when the Hora lagna is unavailable (polar night or day). */
+export function varnadaLagnas(chart, lagnas) {
+  const hora = lagnas.find(l => l.name === 'Hora lagna');
+  if (!hora || hora.lon == null) return [];
+  return Array.from({ length: 12 }, (_, i) => varnadaOfHouse(chart, hora.sign, i + 1));
+}
+
+/** Karakamsa: the Atmakaraka's navamsa sign, read as a lagna in the rasi (Karakamsa) and in the navamsa (Swamsa). */
+export function karakamsa(chart) {
+  const atmakaraka = charaKarakas(chart)[0].planet;
+  const sign = navamsaSign(chart.planets[atmakaraka].lon);
+  const nav = NINE.map(p => navamsaSign(chart.planets[p].lon));
+  return {
+    atmakaraka, sign, lord: SIGN_LORD[sign],
+    planets: NINE.map(p => ({ planet: p, rasiSign: chart.planets[p].sign, rasiHouse: countSigns(sign, chart.planets[p].sign), navamsaSign: nav[p], navamsaHouse: countSigns(sign, nav[p]) })),
+    rasiOccupants: NINE.filter(p => chart.planets[p].sign === sign), navamsaOccupants: NINE.filter(p => nav[p] === sign),
+    rasiAspecting: NINE.filter(p => signAspects(chart.planets[p].sign, sign)), navamsaAspecting: NINE.filter(p => signAspects(nav[p], sign)),
+  };
 }
 
 /** Eight chara karakas (Jaimini): Sun..Saturn and Rahu ranked by advancement in the sign; Rahu counted from the end of its sign. */
