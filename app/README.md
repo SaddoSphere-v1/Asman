@@ -4,7 +4,7 @@ Single-file HTML (`../graha-bala.html`) that computes, for any birth, exactly wh
 
 - **Placements**: Lagna and nine grahas — sidereal longitude (Lahiri), nakshatra and pada with lord, sign lord, whole-sign house, Parashara's equal bhava (Lagna degree at the middle of the first bhava), speed and retrogression, combustion, graha yuddha, latitude, declination.
 - **Upagrahas**: Dhuma, Vyatipata, Parivesha, Indrachapa, Upaketu (from the Sun); Kala, Mrityu, Ardhaprahara, Yamaghantaka, Gulika, Mandi (ascendant rising at the ruling planet's portion of day or night; portions follow Jagannatha Hora's fixed eight-slot cycle Sun…Saturn, lordless, entered at the weekday lord).
-- **Special lagnas**: Bhava, Hora, Ghati, Vighati, Pranapada (Sun at birth plus 1/4, 1/2, 5/4, 5 degrees per minute since sunrise, as Jagannatha Hora), Varnada (Raman / Narasimha Rao method), Sree, Indu (Raman), Kunda, Bhrigu Bindu.
+- **Special lagnas**: Bhava, Hora, Ghati, Vighati, Pranapada (Sun at birth plus 1/4, 1/2, 5/4, 5 degrees per minute since sunrise, as Jagannatha Hora), Varnada (Raman / Narasimha Rao method), Sree, Indu (Raman), Kunda, Bhrigu Bindu. A standalone section gives, for every special lagna taken as the reference: whole-sign houses and equal bhavas of the nine grahas, its sign lord and nakshatra lord (placement, house from the lagna, dignity), sputa drishti of each graha on it, argala on it, the Ashtakavarga bindus of its sign, and its sign in the sixteen divisional charts.
 - **Chara karakas**: the eight-karaka scheme (Sun to Saturn and Rahu, Rahu counted from the end of its sign), shown as a column of the Placements table.
 - **Shadbala**: every sub-bala of Sthana (Uchcha, Saptavargaja, Ojhayugma, Kendradi, Drekkana), Dig, Kala (Natonnata, Paksha, Tribhaga, Abda, Masa, Vara, Hora, Ayana, Yuddha), Chesta, Naisargika and Drik; totals in shashtiamsas and rupas, required minimum, ratio, rank. Sun and Moon follow their own rules (Chesta = Ayana / Paksha; Sun's Ayana and Moon's Paksha doubled).
 - **Ishta / Kashta phala** (Raman's method).
@@ -25,7 +25,8 @@ Swiss Ephemeris is licensed AGPL-3.0-or-later; the built HTML is the complete co
 ```
 app/
   src/            ES modules: sweph.js (WASM wrapper) · time.js · constants.js · vargas.js · relations.js · atlas.js
-                  chart.js (positions, houses, Hindu day) · upagrahas.js · shadbala.js · avasthas.js · render.js · main.js
+                  chart.js (positions, houses, Hindu day) · upagrahas.js · lagnas.js · lagnatables.js · argala.js · ashtakavarga.js
+                  shadbala.js · avasthas.js · tables.js · render.js · main.js
   vendor/         Swiss Ephemeris WASM + data files (AGPL)
   data/           atlas.tsv.gz — GeoNames places ≥ 5000 (CC BY 4.0)
   test/           node:test suites and JSON fixtures
@@ -48,6 +49,7 @@ npm test             # parity + regression tests
 - `test/upagrahas.test.mjs`: kalavela and Pranapada longitudes against an independent Python implementation of the same rule.
 - `test/lagnas.test.mjs`: Varnada, Sree, Indu, Bhrigu Bindu and the chara karakas against PyJHora; lagna rates. (PyJHora's own time-based lagnas apply the zone offset twice and run Vighati at 15°/min, so those are checked against Jagannatha Hora instead.)
 - `test/argala.test.mjs`: argala and obstruction rules, tie handling, vipareeta argala and node reversal on constructed charts.
+- `test/lagnatables.test.mjs`: the tables computed from each special lagna (houses, equal bhavas, lords, aspects, argala, bindus, varga signs) checked against direct recomputation from the chart.
 - `test/avasthas.test.mjs`: rule-level tests of every Deeptadi and Lajjitadi condition on constructed charts.
 - `test/atlas.test.mjs`: place lookup by current name, former name (Madras, Bombay, Bangalore), with region or country, and coordinate fallback.
 

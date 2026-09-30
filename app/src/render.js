@@ -2,7 +2,8 @@
 import { fmtDMS, fmtHours, formatOffset, localHours } from './time.js';
 import { SEVEN, NINE, PLANET_NAMES, SIGN_NAMES, WEEKDAY_NAMES } from './constants.js';
 import { aspectMatrix, relationshipTables, dignityTable } from './tables.js';
-import { divisionalCharts } from './vargas.js';
+import { divisionalCharts, VARGA_NAMES } from './vargas.js';
+import { specialLagnaTables } from './lagnatables.js';
 import { computeArgala, ARGALA_HOUSES } from './argala.js';
 
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -29,7 +30,7 @@ export function renderAll({ chart, shadbala, upagrahas, avasthas, ashtakavarga, 
   const parts = [];
   parts.push(renderHeader(c));
   parts.push(renderPlacements(c, karakas));
-  if (lagnas) parts.push(renderLagnas(lagnas));
+  if (lagnas) parts.push(renderLagnas(c, lagnas, ashtakavarga, shadbala.options.drishtiSpecial));
   parts.push(renderDivisional(c, upagrahas, lagnas));
   parts.push(renderDignities(c));
   parts.push(renderRelationships(c));
@@ -197,23 +198,39 @@ function renderDivisional(c, upagrahas = [], lagnas = []) {
   return html;
 }
 
-function renderLagnas(lagnas) {
-  const rows = lagnas.map(u => (u.lon == null ? [u.name, txt(u.unavailable || '—', 'wrap'), txt('—'), txt('—'), txt('—'), txt('—')]
-    : [u.name, txt(signDeg(u.lon)), txt(nak(u.nakshatra)), txt(pname(u.nakshatra.lord)), txt(String(u.house)), txt(String(u.bhava))]));
-  return `<section id="lagnas"><h2>Special lagnas</h2>${table('', ['Lagna', 'Sign and degree', 'Nakshatra and pada', 'Nakshatra lord', 'House', 'Bhava'], rows)}</section>`;
+function renderLagnas(c, lagnas, ashtakavarga, special) {
+  const T = specialLagnaTables({ chart: c, lagnas, ashtakavarga, special });
+  const main = lagnas.map(u => (u.lon == null ? [u.name, txt(u.unavailable || '—', 'wrap'), txt('—'), txt('—'), txt('—'), txt('—'), txt('—')]
+    : [u.name, txt(signDeg(u.lon)), txt(nak(u.nakshatra)), txt(pname(u.nakshatra.lord)), txt(pname(u.signLord)), txt(String(u.house)), txt(String(u.bhava))]));
+  let html = `<section id="lagnas"><h2>Special lagnas</h2>${table('', ['Lagna', 'Sign and degree', 'Nakshatra and pada', 'Nakshatra lord', 'Sign lord', 'House', 'Bhava'], main)}`;
+  const avail = T.filter(t => t.lon != null);
+  if (!avail.length) return html + '</section>';
+  const grahaHead = ['Lagna', ...NINE.map(pname)];
+  const withSign = (t) => `${t.name} · ${SIGN_NAMES[t.sign]}`;
+  html += `<h2>Houses of the grahas from the special lagnas</h2>${table('', grahaHead, avail.map(t => [withSign(t), ...t.houses.map(h => txt(String(h)))]), 'matrix')}`;
+  html += `<h2>Bhavas of the grahas from the special lagnas</h2>${table('', grahaHead, avail.map(t => [withSign(t), ...t.bhavas.map(h => txt(String(h)))]), 'matrix')}`;
+  const place = (x) => { const st = [x.retro ? 'Retrograde' : null, x.combust ? 'Combust' : null].filter(Boolean).join(', '); return `${SIGN_NAMES[x.sign]} ${fmtDMS(x.deg, 2)}${st ? ' · ' + st : ''}`; };
+  const lordCells = (x) => [txt(pname(x.planet)), txt(place(x)), txt(String(x.house)), txt(x.dignity ? DIGNITY_WORD[x.dignity] : '—')];
+  html += `<h2>Sign lords of the special lagnas</h2>${table('', ['Lagna', 'Sign lord', 'Placement', 'House from the lagna', 'Dignity'], avail.map(t => [withSign(t), ...lordCells(t.lord)]))}`;
+  html += `<h2>Nakshatra lords of the special lagnas</h2>${table('', ['Lagna', 'Nakshatra lord', 'Placement', 'House from the lagna', 'Dignity'], avail.map(t => [withSign(t), ...lordCells(t.nakshatraLord)]))}`;
+  html += `<h2>Aspects on the special lagnas</h2>${table('', [...grahaHead, 'Total'], avail.map(t => [withSign(t), ...t.aspects.map(v => num(v)), num(t.aspectTotal)]), 'matrix')}`;
+  html += `<h2>Argala on the special lagnas</h2>${table('', ['Lagna', 'Second house', 'Fourth house', 'Eleventh house', 'Fifth house', 'Third house (malefics)'], avail.map(t => [withSign(t), ...ARGALA_HOUSES.map(a => argalaCell(t.argala[a.key])), argalaCell(t.argala.vipareeta)]))}`;
+  if (ashtakavarga) html += `<h2>Ashtakavarga bindus of the special lagnas</h2>${table('', ['Lagna', ...SEVEN.map(pname), 'Total', 'After shodhana'], avail.map(t => [withSign(t), ...t.bindus.perPlanet.map(b => txt(String(b))), txt(String(t.bindus.total)), txt(String(t.bindus.reduced))]), 'matrix')}`;
+  html += `<h2>Special lagnas in the divisional charts</h2>${table('', ['Chart', ...avail.map(t => t.name)], avail[0].vargas.map((v, k) => [VARGA_NAMES[v.D], ...avail.map(t => txt(SIGN_NAMES[t.vargas[k].sign]))]), 'matrix')}`;
+  return html + '</section>';
 }
 
+function argalaCell(a) {
+  if (!a.giving.length) return txt('—', 'muted');
+  const who = a.giving.map(pname).join(', ');
+  if (a.house === 3) return txt(who, 'wrap');
+  const obs = a.obstructing.length ? ` · ${a.obstructed ? 'obstructed by' : 'not obstructed by'} ${a.obstructing.map(pname).join(', ')}` : ' · unobstructed';
+  return txt(who + obs, 'wrap');
+}
 
 function renderArgala(c) {
   const ag = computeArgala(c);
-  const cell = (a) => {
-    if (!a.giving.length) return txt('—', 'muted');
-    const who = a.giving.map(pname).join(', ');
-    if (a.house === 3) return txt(who, 'wrap');
-    const obs = a.obstructing.length ? ` · ${a.obstructed ? 'obstructed by' : 'not obstructed by'} ${a.obstructing.map(pname).join(', ')}` : ' · unobstructed';
-    return txt(who + obs, 'wrap');
-  };
   const head = ['Reference', 'Second house', 'Fourth house', 'Eleventh house', 'Fifth house', 'Third house (malefics)'];
-  const rows = [...ag.houses, ...ag.planets].map(r => [`${r.label} · ${SIGN_NAMES[r.sign]}`, ...ARGALA_HOUSES.map(a => cell(r.argala[a.key])), cell(r.argala.vipareeta)]);
+  const rows = [...ag.houses, ...ag.planets].map(r => [`${r.label} · ${SIGN_NAMES[r.sign]}`, ...ARGALA_HOUSES.map(a => argalaCell(r.argala[a.key])), argalaCell(r.argala.vipareeta)]);
   return `<section id="argala"><h2>Argala</h2>${table('', head, rows)}</section>`;
 }
