@@ -41,6 +41,7 @@ npm test             # parity + regression tests
 
 - `test/positions.test.mjs`: 8 charts (day/night, southern hemisphere, high latitude, pre-1900) against pyswisseph — longitudes, latitudes, speeds, declinations, ascendant, cusps, sunrise/sunset.
 - `test/shadbala.test.mjs`: V.P. Jain's published worked example (13 Sep 1981, Delhi) — Sthana, Dig, Kala components, Ayana, Naisargika, Drik reproduce the book to 0.02–0.35 shashtiamsa; Chesta within textbook tolerance.
+- `test/shadbala-raman.test.mjs`: B.V. Raman's own worked example (16 Oct 1918, Bangalore, Raman ayanamsa) — Sthana, Dig, Kala components, Ayana, Chesta (to 0.05), Naisargika and Drik (Raman aspects) reproduce the book; two known book slips (Saturn's Uchcha arithmetic, Mars's unfolded Dig distance) are excluded.
 - `test/upagrahas.test.mjs`: kalavela and Pranapada longitudes against an independent Python implementation of the classical rule.
 - `test/atlas.test.mjs`: place lookup by current name, former name (Madras, Bombay, Bangalore), with region or country, and coordinate fallback.
 
