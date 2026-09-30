@@ -10,7 +10,7 @@ A curated, license-cleared collection of **planetary imagery, astrological glyph
 
 ## Calculator (`graha-bala.html`)
 
-`graha-bala.html` is a self-contained, offline birth-chart calculator (open the file in a browser): placements with nakshatras, all upagrahas, the full Shadbala with the separate Sun/Moon rules, Ishta/Kashta phala, and the Deeptadi and Lajjitadi avasthas — outputs only, no interpretation. Lahiri ayanamsa, true Rahu, Swiss Ephemeris (WebAssembly, data files embedded), JHora / B.V. Raman conventions. Source, tests and build in `app/` (see `app/README.md`). The embedded Swiss Ephemeris is AGPL-3.0-or-later.
+`graha-bala.html` is a self-contained, offline birth-chart calculator (open the file in a browser). It asks for name, gender, birthday, birthtime and birthplace (resolved by an embedded GeoNames atlas) and prints placements with nakshatras, all upagrahas, the full Shadbala with the separate Sun/Moon rules, Ishta/Kashta phala, and the Deeptadi and Lajjitadi avasthas — outputs only, no interpretation. Lahiri ayanamsa, true Rahu, Swiss Ephemeris (WebAssembly, data files embedded), JHora / B.V. Raman conventions. Source, tests and build in `app/` (see `app/README.md`). The embedded Swiss Ephemeris is AGPL-3.0-or-later.
 
 ## Quick orientation
 

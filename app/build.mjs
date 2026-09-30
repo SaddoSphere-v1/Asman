@@ -11,7 +11,7 @@ const result = await esbuild.build({
   entryPoints: [path.join(here, 'src', 'main.js')],
   bundle: true, format: 'esm', platform: 'browser', target: ['es2022'],
   minify: false, legalComments: 'none', write: false,
-  loader: { '.wasm': 'base64', '.se1': 'base64' },
+  loader: { '.wasm': 'base64', '.se1': 'base64', '.gz': 'base64' },
   external: ['node:module', 'node:fs', 'node:path', 'node:url', 'node:process'],
   logLevel: 'warning',
 });

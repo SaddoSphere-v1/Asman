@@ -4,36 +4,26 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Graha Bala</title>
-<meta name="description" content="Outputs-only Vedic birth-chart calculator: placements with nakshatras, upagrahas, Shadbala, Ishta and Kashta phala, Deeptadi and Lajjitadi avasthas. Lahiri ayanamsa, true Rahu, Swiss Ephemeris.">
+<meta name="description" content="Vedic birth-chart calculator: placements with nakshatras, upagrahas, Shadbala, Ishta and Kashta phala, Deeptadi and Lajjitadi avasthas. Lahiri ayanamsa, true Rahu, Swiss Ephemeris.">
 <style>/*__CSS__*/</style>
 </head>
 <body>
 <main>
-  <h1>Graha Bala <small>Lahiri ayanamsa · true Rahu · Swiss Ephemeris · Jagannatha Hora conventions</small></h1>
-  <p class="lede">Enter the birth data and press Compute. Every value is shown; nothing is interpreted.</p>
+  <h1>Graha Bala</h1>
   <form class="inputs" id="form" autocomplete="off">
-    <label>Date <input type="date" id="date" required min="1800-01-01" max="2399-12-31"></label>
-    <label>Time <input type="time" id="time" step="1" required></label>
-    <label>Time zone <select id="zone"></select><span class="tzinfo" id="tzinfo"></span></label>
-    <label>Offset from Greenwich (override) <input type="text" id="offset" placeholder="for example +05:30; blank uses the zone"></label>
-    <label>Latitude in degrees (south negative) <input type="number" id="lat" step="any" min="-90" max="90" required placeholder="13.0827"></label>
-    <label>Longitude in degrees (west negative) <input type="number" id="lon" step="any" min="-180" max="180" required placeholder="80.2707"></label>
-    <label>Place label (optional) <input type="text" id="place" placeholder="Chennai"></label>
-    <details class="options" id="options">
-      <summary>Calculation options (defaults follow Jagannatha Hora and Bangalore Venkata Raman)</summary>
-      <div class="grid" id="optgrid"></div>
-    </details>
+    <label>Name <input type="text" id="name" placeholder=""></label>
+    <label>Gender <select id="gender"><option value="">—</option><option>Male</option><option>Female</option><option>Other</option></select></label>
+    <label>Birthday <input type="date" id="date" required min="1800-01-01" max="2399-12-31"></label>
+    <label>Birthtime <input type="time" id="time" step="1" required></label>
+    <label class="place">Birthplace <input type="text" id="place" required placeholder="City" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="suggest"><div class="suggest" id="suggest" role="listbox" hidden></div><span class="placeinfo" id="placeinfo"></span></label>
     <div class="actions">
       <button type="submit" class="primary" id="compute">Compute</button>
-      <button type="button" id="copy" disabled>Copy as text</button>
-      <button type="button" id="json" disabled>Download as data file</button>
-      <button type="button" id="print" disabled>Print</button>
-      <span class="status" id="status">Loading ephemeris…</span>
+      <span class="status" id="status">Loading…</span>
     </div>
   </form>
   <div id="results"></div>
   <footer>
-    Ephemeris: Swiss Ephemeris (Astrodienst, Dieter Koch and Alois Treindl) compiled to WebAssembly, with the planetary and lunar data files for 1800 to 2399 embedded; licensed under the GNU Affero General Public License, version 3 or later. This file is the complete corresponding source. Formulas: Brihat Parashara Hora Shastra chapters 3, 26, 27 and 45; Bangalore Venkata Raman, <em>Graha and Bhava Balas</em>; Narasimha Rao, <em>Vedic Astrology: An Integrated Approach</em>.
+    Swiss Ephemeris (Astrodienst, Dieter Koch and Alois Treindl) in WebAssembly with the planetary and lunar data files for 1800 to 2399 embedded, under the GNU Affero General Public License, version 3 or later; this file is the complete corresponding source. Atlas: GeoNames (Creative Commons Attribution 4.0). Lahiri ayanamsa, true Rahu, Jagannatha Hora conventions after Bangalore Venkata Raman and Narasimha Rao; Brihat Parashara Hora Shastra chapters 3, 26, 27 and 45.
   </footer>
 </main>
 <script type="module">/*__JS__*/</script>

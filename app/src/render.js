@@ -40,8 +40,9 @@ function renderHeader(c, sb, meta) {
   const off = c.input.utcOffset;
   const d = c.day;
   const rows = [
+    ...(c.input.name || c.input.gender ? [['Name', [c.input.name, c.input.gender].filter(Boolean).join(' · ')]] : []),
     ['Birth', `${c.input.year}-${String(c.input.month).padStart(2, '0')}-${String(c.input.day).padStart(2, '0')} ${fmtHours(c.input.hour + c.input.minute / 60 + (c.input.second || 0) / 3600)} local time, ${formatOffset(off)} from Greenwich${c.input.zone ? ' · ' + c.input.zone : ''}`],
-    ['Place', `${cardinal(c.input.lat, 'north', 'south')}, ${cardinal(c.input.lon, 'east', 'west')}${c.input.place ? ' · ' + c.input.place : ''}`],
+    ['Birthplace', `${c.input.place ? c.input.place + ' · ' : ''}${cardinal(c.input.lat, 'north', 'south')}, ${cardinal(c.input.lon, 'east', 'west')}`],
     ['Julian Day (Universal Time)', `${c.jdUt.toFixed(6)} · Delta T ${c.deltaT.toFixed(1)} seconds · local sidereal time ${fmtDMS(c.lst)}`],
     ['Ayanamsa', `Lahiri ${fmtDMS(c.ayanamsa, 2)} · Rahu: true node · Swiss Ephemeris ${meta.sweVersion}`],
     ['Sunrise / sunset', d.polar ? 'no sunrise or sunset at this latitude' : `${fmtLocalDateTime(d.sunrise, off)} / ${fmtLocalDateTime(d.sunset, off)} · next sunrise ${fmtLocalDateTime(d.nextSunrise, off)} (disc centre, no refraction)`],
