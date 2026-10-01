@@ -51,6 +51,7 @@ form.inputs input:focus, form.inputs select:focus, button:focus-visible { outlin
 form.inputs .actions { display: flex; gap: 12px; flex-wrap: wrap; grid-column: 1 / -1; align-items: center; margin-top: 2px; }
 button { font: 14px var(--sans); border-radius: 5px; padding: 7px 14px; border: 1px solid var(--line); background: var(--panel); color: var(--ink); cursor: pointer; }
 button.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); font-weight: 600; }
+#download { margin-left: 8px; }
 button:disabled { opacity: 0.5; cursor: default; }
 .status { color: var(--muted); font-size: 13px; }
 .status.error { color: #b3261e; }
@@ -110,6 +111,7 @@ footer a { color: inherit; }
     <label class="place">Birthplace <input type="text" id="place" required placeholder="City" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="suggest"><div class="suggest" id="suggest" role="listbox" hidden></div><span class="placeinfo" id="placeinfo"></span></label>
     <div class="actions">
       <button type="submit" class="primary" id="compute">Compute</button>
+      <button type="button" id="download" hidden>Download Word document</button>
       <span class="status" id="status">Loading…</span>
     </div>
   </form>
@@ -2996,7 +2998,7 @@ async function createSwissEphModule(moduleArg = {}) {
     __indirect_function_table = wasmExports2["__indirect_function_table"];
   }
   var wasmImports = { c: ___syscall_fcntl64, i: ___syscall_ioctl, k: ___syscall_openat, d: ___syscall_readlinkat, j: _emscripten_resize_heap, f: _environ_get, g: _environ_sizes_get, a: _fd_close, h: _fd_read, e: _fd_seek, b: _fd_write };
-  async function run() {
+  async function run2() {
     preRun();
     if (runDependencies) {
       await resolveRunDependencies();
@@ -3007,7 +3009,7 @@ async function createSwissEphModule(moduleArg = {}) {
   }
   var wasmExports;
   wasmExports = await createWasm();
-  await run();
+  await run2();
   ;
   return Module;
 }
@@ -3828,14 +3830,14 @@ function beneficsAndMalefics(chart, nodesInMercuryTest = false) {
   const P = chart.planets;
   const benefics = [JUPITER, VENUS], malefics = [SUN, MARS, SATURN];
   (chart.waxing ? benefics : malefics).push(MOON);
-  const same = (list) => list.filter((q) => P[q].sign === P[MERCURY].sign);
+  const same = (list2) => list2.filter((q) => P[q].sign === P[MERCURY].sign);
   const mal = same(malefics).concat(nodesInMercuryTest ? [7, 8].filter((q) => P[q].sign === P[MERCURY].sign) : []);
   const ben = same(benefics);
   let mercuryMalefic;
   if (mal.length === 0 && ben.length === 0) mercuryMalefic = false;
   else if (mal.length !== ben.length) mercuryMalefic = mal.length > ben.length;
   else {
-    const near = (list) => Math.min(...list.map((q) => sep(P[q].lon, P[MERCURY].lon)));
+    const near = (list2) => Math.min(...list2.map((q) => sep(P[q].lon, P[MERCURY].lon)));
     mercuryMalefic = near(mal) < near(ben);
   }
   (mercuryMalefic ? malefics : benefics).push(MERCURY);
@@ -4311,17 +4313,17 @@ function computeAvasthas(chart, options = {}) {
     const aspMalefic = naturalMalefics.filter((q) => q !== p && aspectedBy(p, q));
     const aspBenefic = naturalBenefics.filter((q) => q !== p && aspectedBy(p, q));
     const conjBenefic = naturalBenefics.filter((q) => q !== p && conjunct(p, q));
-    const L = [], W = [];
+    const L = [], W2 = [];
     if (P[p].house === 5) {
       const co = [SUN, MARS, SATURN, RAHU, KETU].filter((q) => q !== p && conjunct(p, q));
       if (co.length) {
         L.push("Lajjita");
-        W.push(`5th house with ${co.map((q) => NAME[q]).join(", ")}`);
+        W2.push(`5th house with ${co.map((q) => NAME[q]).join(", ")}`);
       }
     }
     if (isExaltationSign(p, sign) || isMoolatrikona(p, sign, opt.garvitaMoolatrikona === "degrees" ? deg : null)) {
       L.push("Garvita");
-      W.push(isExaltationSign(p, sign) ? "exalted" : "moolatrikona");
+      W2.push(isExaltationSign(p, sign) ? "exalted" : "moolatrikona");
     }
     {
       const r = [];
@@ -4331,14 +4333,14 @@ function computeAvasthas(chart, options = {}) {
       if (p !== SATURN && conjunct(p, SATURN) && !conjEnemy.includes(SATURN)) r.push("with Saturn");
       if (r.length) {
         L.push("Kshudhita");
-        W.push(r.join(", "));
+        W2.push(r.join(", "));
       }
     }
     {
       const by = opt.trushitaBy === "malefic" ? aspMalefic : aspEnemy;
       if (WATERY_SIGNS.includes(sign) && by.length && !aspBenefic.length) {
         L.push("Trushita");
-        W.push(`watery sign, aspected by ${by.map((q) => NAME[q]).join("/")}, no benefic aspect`);
+        W2.push(`watery sign, aspected by ${by.map((q) => NAME[q]).join("/")}, no benefic aspect`);
       }
     }
     {
@@ -4351,14 +4353,14 @@ function computeAvasthas(chart, options = {}) {
       if (p !== JUPITER && conjunct(p, JUPITER) && !cj.includes(JUPITER)) r.push("with Jupiter");
       if (r.length) {
         L.push("Mudita");
-        W.push(r.join(", "));
+        W2.push(r.join(", "));
       }
     }
     if (p !== SUN && conjunct(p, SUN) && (aspMalefic.length || aspEnemy.length)) {
       L.push("Kshobhita");
-      W.push(`with Sun, aspected by ${[.../* @__PURE__ */ new Set([...aspMalefic, ...aspEnemy])].map((q) => NAME[q]).join("/")}`);
+      W2.push(`with Sun, aspected by ${[.../* @__PURE__ */ new Set([...aspMalefic, ...aspEnemy])].map((q) => NAME[q]).join("/")}`);
     }
-    lajjitadi[p] = { states: L, why: W };
+    lajjitadi[p] = { states: L, why: W2 };
   }
   return { deeptadi, lajjitadi, options: opt, benefics: naturalBenefics, malefics: naturalMalefics };
 }
@@ -4501,8 +4503,8 @@ function lordOf(pos, sign, options = {}) {
   return opt.coLords === "stronger" && (sign === 7 || sign === 10) ? strongerCoLord(pos, sign) : SIGN_LORD[sign];
 }
 function strongerSign(pos, s1, s2, options = {}) {
-  const n12 = inSign(pos, s1).length, n22 = inSign(pos, s2).length;
-  if (n12 !== n22) return n12 > n22 ? s1 : s2;
+  const n12 = inSign(pos, s1).length, n23 = inSign(pos, s2).length;
+  if (n12 !== n23) return n12 > n23 ? s1 : s2;
   const l1 = lordOf(pos, s1, options), l2 = lordOf(pos, s2, options);
   const r1 = supportScore(pos, s1, l1), r2 = supportScore(pos, s2, l2);
   if (r1 !== r2) return r1 > r2 ? s1 : s2;
@@ -4738,7 +4740,7 @@ function table(caption, head, rows, cls = "") {
 }
 var num = (x, d = 2) => ({ html: esc(d === 4 ? n4(x) : d === 2 ? n2(x) : n1(x)), cls: "num" });
 var txt = (s, cls) => ({ html: esc(s), cls });
-var grahaList = (list) => list.length ? list.map(pname).join(", ") : "\u2014";
+var grahaList = (list2) => list2.length ? list2.map(pname).join(", ") : "\u2014";
 var vargaPositions = (v) => ({ planets: v.planets.map((x) => ({ sign: x.sign, deg: x.deg })), lagnaSign: v.lagna.sign });
 function renderAll({ chart, shadbala, upagrahas, avasthas, ashtakavarga, lagnas, karakas, meta }) {
   const c = chart, off = c.input.utcOffset;
@@ -4962,18 +4964,269 @@ function renderKarakamsa(c) {
   const rows = K.planets.map((x) => [pname(x.planet), txt(SIGN_NAMES[x.rasiSign]), txt(String(x.rasiHouse)), txt(SIGN_NAMES[x.navamsaSign]), txt(String(x.navamsaHouse))]);
   return `<section id="karakamsa"><h2>Karakamsa</h2>${summary}${table("", ["Graha", "Rasi sign", "House from Karakamsa", "Navamsa sign", "House from Swamsa"], rows)}</section>`;
 }
-function argalaCell(a) {
-  if (!a.giving.length) return txt("\u2014", "muted");
+function argalaText(a) {
+  if (!a.giving.length) return null;
   const who = a.giving.map(pname).join(", ");
-  if (a.house === 3) return txt(who, "wrap");
+  if (a.house === 3) return who;
   const obs = a.obstructing.length ? ` \xB7 ${a.obstructed ? "obstructed by" : "not obstructed by"} ${a.obstructing.map(pname).join(", ")}` : " \xB7 unobstructed";
-  return txt(who + obs, "wrap");
+  return who + obs;
+}
+function argalaCell(a) {
+  const t = argalaText(a);
+  return t == null ? txt("\u2014", "muted") : txt(t, "wrap");
 }
 function renderArgala(c) {
   const ag = computeArgala(c);
   const head = ["House", "Second house", "Fourth house", "Eleventh house", "Fifth house", "Third house (malefics)"];
   const rows = ag.houses.map((r) => [`${r.label} \xB7 ${SIGN_NAMES[r.sign]}`, ...ARGALA_HOUSES.map((a) => argalaCell(r.argala[a.key])), argalaCell(r.argala.vipareeta)]);
   return `<section id="argala"><h2>Argala</h2>${table("", head, rows)}</section>`;
+}
+
+// src/docx.js
+var esc2 = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+var CRC_TABLE = (() => {
+  const t = new Uint32Array(256);
+  for (let n = 0; n < 256; n++) {
+    let c = n;
+    for (let k = 0; k < 8; k++) c = c & 1 ? 3988292384 ^ c >>> 1 : c >>> 1;
+    t[n] = c >>> 0;
+  }
+  return t;
+})();
+function crc32(bytes) {
+  let c = 4294967295;
+  for (let i = 0; i < bytes.length; i++) c = CRC_TABLE[(c ^ bytes[i]) & 255] ^ c >>> 8;
+  return (c ^ 4294967295) >>> 0;
+}
+function dosDateTime(d) {
+  const time = d.getHours() << 11 | d.getMinutes() << 5 | d.getSeconds() >> 1;
+  const date = d.getFullYear() - 1980 << 9 | d.getMonth() + 1 << 5 | d.getDate();
+  return { time, date };
+}
+function zipStored(entries, now = /* @__PURE__ */ new Date()) {
+  const enc = new TextEncoder(), { time, date } = dosDateTime(now);
+  const locals = [], centrals = [];
+  let offset = 0;
+  for (const e of entries) {
+    const name = enc.encode(e.name), crc = crc32(e.data), n = e.data.length;
+    const local = new Uint8Array(30 + name.length + n), lv = new DataView(local.buffer);
+    lv.setUint32(0, 67324752, true);
+    lv.setUint16(4, 20, true);
+    lv.setUint16(6, 2048, true);
+    lv.setUint16(8, 0, true);
+    lv.setUint16(10, time, true);
+    lv.setUint16(12, date, true);
+    lv.setUint32(14, crc, true);
+    lv.setUint32(18, n, true);
+    lv.setUint32(22, n, true);
+    lv.setUint16(26, name.length, true);
+    lv.setUint16(28, 0, true);
+    local.set(name, 30);
+    local.set(e.data, 30 + name.length);
+    const central = new Uint8Array(46 + name.length), cv = new DataView(central.buffer);
+    cv.setUint32(0, 33639248, true);
+    cv.setUint16(4, 20, true);
+    cv.setUint16(6, 20, true);
+    cv.setUint16(8, 2048, true);
+    cv.setUint16(10, 0, true);
+    cv.setUint16(12, time, true);
+    cv.setUint16(14, date, true);
+    cv.setUint32(16, crc, true);
+    cv.setUint32(20, n, true);
+    cv.setUint32(24, n, true);
+    cv.setUint16(28, name.length, true);
+    cv.setUint16(30, 0, true);
+    cv.setUint16(32, 0, true);
+    cv.setUint16(34, 0, true);
+    cv.setUint16(36, 0, true);
+    cv.setUint32(38, 0, true);
+    cv.setUint32(42, offset, true);
+    central.set(name, 46);
+    locals.push(local);
+    centrals.push(central);
+    offset += local.length;
+  }
+  const cdSize = centrals.reduce((a, c) => a + c.length, 0);
+  const end = new Uint8Array(22), ev = new DataView(end.buffer);
+  ev.setUint32(0, 101010256, true);
+  ev.setUint16(4, 0, true);
+  ev.setUint16(6, 0, true);
+  ev.setUint16(8, entries.length, true);
+  ev.setUint16(10, entries.length, true);
+  ev.setUint32(12, cdSize, true);
+  ev.setUint32(16, offset, true);
+  ev.setUint16(20, 0, true);
+  const out = new Uint8Array(offset + cdSize + 22);
+  let pos = 0;
+  for (const b of [...locals, ...centrals, end]) {
+    out.set(b, pos);
+    pos += b.length;
+  }
+  return out;
+}
+var W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
+var run = (text, bold = false) => `<w:r>${bold ? "<w:rPr><w:b/></w:rPr>" : ""}<w:t xml:space="preserve">${esc2(text)}</w:t></w:r>`;
+var para = (text, style = null, bold = false) => `<w:p>${style ? `<w:pPr><w:pStyle w:val="${style}"/></w:pPr>` : ""}${text === "" ? "" : run(text, bold)}</w:p>`;
+var cell = (text, header) => `<w:tc><w:tcPr>${header ? '<w:shd w:val="clear" w:color="auto" w:fill="EDEDED"/>' : ""}</w:tcPr>${para(text == null ? "" : String(text), null, header)}</w:tc>`;
+var borders = ["top", "left", "bottom", "right", "insideH", "insideV"].map((b) => `<w:${b} w:val="single" w:sz="4" w:space="0" w:color="999999"/>`).join("");
+function tableXml(head, rows) {
+  const tr = (cells, header) => `<w:tr>${header ? "<w:trPr><w:tblHeader/></w:trPr>" : ""}${cells.map((c) => cell(c, header)).join("")}</w:tr>`;
+  return `<w:tbl><w:tblPr><w:tblW w:w="5000" w:type="pct"/><w:tblBorders>${borders}</w:tblBorders><w:tblLook w:val="04A0"/></w:tblPr><w:tblGrid>${head.map(() => "<w:gridCol/>").join("")}</w:tblGrid>${tr(head, true)}${rows.map((r) => tr(r, false)).join("")}</w:tbl>`;
+}
+function buildDocx({ title, subtitle = null, sections }, { landscapeFrom = 9 } = {}) {
+  const portrait = '<w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="1134" w:right="1134" w:bottom="1134" w:left="1134" w:header="708" w:footer="708" w:gutter="0"/>';
+  const landscape = '<w:pgSz w:w="16838" w:h="11906" w:orient="landscape"/><w:pgMar w:top="1134" w:right="1134" w:bottom="1134" w:left="1134" w:header="708" w:footer="708" w:gutter="0"/>';
+  let body = para(title, "Title");
+  if (subtitle) body += para(subtitle);
+  let orient = "portrait";
+  const switchTo = (o) => {
+    if (o === orient) return;
+    body += `<w:p><w:pPr><w:sectPr>${orient === "portrait" ? portrait : landscape}</w:sectPr></w:pPr></w:p>`;
+    orient = o;
+  };
+  sections.forEach((s, i) => {
+    body += para(`${i + 1}. ${s.title}`, "Heading1");
+    for (const line of s.lines || []) body += para(line);
+    for (const t of s.tables) {
+      switchTo(t.head.length >= landscapeFrom ? "landscape" : "portrait");
+      if (t.title) body += para(t.title, "Heading2");
+      body += tableXml(t.head, t.rows);
+      body += para("");
+    }
+  });
+  body += `<w:sectPr>${orient === "portrait" ? portrait : landscape}</w:sectPr>`;
+  const document2 = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document xmlns:w="${W}"><w:body>${body}</w:body></w:document>`;
+  const styles = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:styles xmlns:w="${W}">
+<w:docDefaults><w:rPrDefault><w:rPr><w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:cs="Calibri"/><w:sz w:val="20"/></w:rPr></w:rPrDefault><w:pPrDefault><w:pPr><w:spacing w:after="60" w:line="240" w:lineRule="auto"/></w:pPr></w:pPrDefault></w:docDefaults>
+<w:style w:type="paragraph" w:default="1" w:styleId="Normal"><w:name w:val="Normal"/></w:style>
+<w:style w:type="paragraph" w:styleId="Title"><w:name w:val="Title"/><w:basedOn w:val="Normal"/><w:pPr><w:spacing w:after="120"/></w:pPr><w:rPr><w:b/><w:sz w:val="36"/></w:rPr></w:style>
+<w:style w:type="paragraph" w:styleId="Heading1"><w:name w:val="heading 1"/><w:basedOn w:val="Normal"/><w:pPr><w:keepNext/><w:spacing w:before="280" w:after="100"/><w:outlineLvl w:val="0"/></w:pPr><w:rPr><w:b/><w:sz w:val="28"/></w:rPr></w:style>
+<w:style w:type="paragraph" w:styleId="Heading2"><w:name w:val="heading 2"/><w:basedOn w:val="Normal"/><w:pPr><w:keepNext/><w:spacing w:before="160" w:after="60"/><w:outlineLvl w:val="1"/></w:pPr><w:rPr><w:b/><w:sz w:val="22"/></w:rPr></w:style>
+</w:styles>`;
+  const contentTypes = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/><Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/></Types>`;
+  const rels = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>`;
+  const docRels = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>`;
+  const enc = new TextEncoder();
+  return zipStored([
+    { name: "[Content_Types].xml", data: enc.encode(contentTypes) },
+    { name: "_rels/.rels", data: enc.encode(rels) },
+    { name: "word/document.xml", data: enc.encode(document2) },
+    { name: "word/_rels/document.xml.rels", data: enc.encode(docRels) },
+    { name: "word/styles.xml", data: enc.encode(styles) }
+  ]);
+}
+
+// src/report.js
+var pname2 = (p) => PLANET_NAMES[p];
+var n22 = (x) => x == null || !Number.isFinite(x) ? "none" : (Math.round(x * 100) / 100).toFixed(2);
+var list = (ps) => ps.length ? ps.map(pname2).join(", ") : "none";
+var none = (s) => s == null || s === "" ? "none" : String(s);
+var GRAHA_HEAD = NINE.map(pname2);
+function reportSections({ chart: c, shadbala, upagrahas, avasthas, ashtakavarga, lagnas, karakas }) {
+  const off = c.input.utcOffset, d = c.day, P = c.planets;
+  const sections = [];
+  const fmtDate = `${c.input.year}-${String(c.input.month).padStart(2, "0")}-${String(c.input.day).padStart(2, "0")}`;
+  sections.push({ title: "Identity", tables: [{ head: ["Field", "Value"], rows: [
+    ["Name", none(c.input.name)],
+    ["Gender", none(c.input.gender)],
+    ["Date", fmtDate],
+    ["Local time", fmtHours(c.input.hour + c.input.minute / 60 + (c.input.second || 0) / 3600)],
+    ["Offset from Greenwich", formatOffset(off)],
+    ["Place", none(c.input.place)],
+    ["Latitude", cardinal(c.input.lat, "north", "south")],
+    ["Longitude", cardinal(c.input.lon, "east", "west")],
+    ["Ayanamsa (Lahiri)", fmtDMS(c.ayanamsa, 2)],
+    ["Sunrise", d.polar ? "none" : fmtHours(localHours(d.sunrise, off))],
+    ["Sunset", d.polar ? "none" : fmtHours(localHours(d.sunset, off))],
+    ["Day or night birth", d.polar ? "none" : d.isDay ? "day" : "night"],
+    ["Weekday", WEEKDAY_NAMES[c.weekday]],
+    ["Tithi", `${tithiName(c.tithi)}, ${c.waxing ? "Shukla" : "Krishna"} paksha`],
+    ["Yoga", c.yoga.name],
+    ["Karana", c.karana.name]
+  ] }] });
+  const compound = compoundMatrix(SEVEN.map((p) => P[p].sign));
+  const karakaOf = Object.fromEntries((karakas || []).map((k) => [k.planet, k.karaka]));
+  const status = (x) => [x.retro ? "retrograde" : "", x.combust ? "combust" : "", x.war ? x.war.won ? `wins war against ${pname2(x.war.with)}` : `loses war to ${pname2(x.war.with)}` : ""].filter(Boolean).join(", ");
+  const placements = [["Lagna", signDeg(c.lagna.lon), nak(c.lagna.nakshatra), pname2(c.lagna.nakshatra.lord), pname2(c.lagna.signLord), "1", "1", "none", "none", "none"]];
+  for (const p of NINE) {
+    const x = P[p];
+    const dig = p === RAHU || p === KETU ? "none" : DIGNITY_WORD[dignity(p, x.sign, x.deg, compound)];
+    placements.push([pname2(p), signDeg(x.lon), nak(x.nakshatra), pname2(x.nakshatra.lord), pname2(x.signLord), String(x.house), String(x.bhava), dig, none(karakaOf[p]), none(status(x))]);
+  }
+  sections.push({ title: "Placements", tables: [{ head: ["Point", "Sign and degree", "Nakshatra and pada", "Nakshatra lord", "Sign lord", "House", "Bhava", "Dignity", "Chara karaka", "Status"], rows: placements }] });
+  const placed = (p) => `${SIGN_NAMES[P[p].sign]}, house ${P[p].house}`;
+  sections.push({ title: "House lords", tables: [{ head: ["House", "Sign", "Lord", "Lord's sign and house", "Co-lord", "Co-lord's sign and house"], rows: Array.from({ length: 12 }, (_, i) => {
+    const sign = (c.lagnaSign + i) % 12, lord = SIGN_LORD[sign], co = sign === 7 ? KETU : sign === 10 ? RAHU : null;
+    return [`House ${i + 1}`, SIGN_NAMES[sign], pname2(lord), placed(lord), co == null ? "none" : pname2(co), co == null ? "none" : placed(co)];
+  }) }] });
+  const lagnaRows = (lagnas || []).map((u) => u.lon == null ? [u.name, u.unavailable || "none", "none", "none", "none"] : [u.name, signDeg(u.lon), nak(u.nakshatra), String(u.house), String(u.bhava)]);
+  const varnada = varnadaLagnas(c, lagnas || []);
+  const t4 = [{ title: "Special lagnas", head: ["Lagna", "Sign and degree", "Nakshatra and pada", "House", "Bhava"], rows: lagnaRows }];
+  if (varnada.length) t4.push({ title: "Varnada lagnas", head: ["House", "Sign", "House from Lagna"], rows: varnada.map((v) => [`House ${v.house}`, SIGN_NAMES[v.sign], String(v.houseFromLagna)]) });
+  sections.push({ title: "Special lagnas", tables: t4 });
+  const A = computeArudhas(c);
+  sections.push({ title: "Arudha padas", tables: [
+    { title: "Bhava arudhas", head: ["Arudha", "Of house", "Sign", "Lord", "House from Lagna", "Grahas in the sign", "Grahas aspecting the sign"], rows: A.bhava.map((a) => [a.name, `${a.index}, ${SIGN_NAMES[a.houseSign]}`, SIGN_NAMES[a.sign], pname2(a.lord), String(a.house), list(a.occupants), list(a.aspecting)]) },
+    { title: "Graha arudhas", head: ["Graha", "Sign owned", "Arudha sign", "House from Lagna", "Grahas in the sign", "Grahas aspecting the sign"], rows: A.graha.map((g) => [pname2(g.planet), SIGN_NAMES[g.ownSign], SIGN_NAMES[g.sign], String(g.house), list(g.occupants), list(g.aspecting)]) }
+  ] });
+  const K = karakamsa(c);
+  sections.push({
+    title: "Karakamsa",
+    lines: [`Atmakaraka ${pname2(K.atmakaraka)}. Karakamsa ${SIGN_NAMES[K.sign]}, lord ${pname2(K.lord)}.`],
+    tables: [{ head: ["Graha", "Rasi sign", "House from Karakamsa", "Navamsa sign", "House from Swamsa"], rows: K.planets.map((x) => [pname2(x.planet), SIGN_NAMES[x.rasiSign], String(x.rasiHouse), SIGN_NAMES[x.navamsaSign], String(x.navamsaHouse)]) }]
+  });
+  const dv = divisionalCharts(c);
+  const matrix = dv.charts.map((v) => [v.name, SIGN_NAMES[v.lagna.sign], ...v.planets.map((x) => SIGN_NAMES[x.sign])]);
+  const nav = dv.charts.find((v) => v.D === 9);
+  const navRows = [["Lagna", `${SIGN_NAMES[nav.lagna.sign]} ${fmtDMS(nav.lagna.deg, 2)}`, "1", "none", "none"]];
+  nav.planets.forEach((x, p) => navRows.push([pname2(p), `${SIGN_NAMES[x.sign]} ${fmtDMS(x.deg, 2)}`, String(x.house), x.dignity ? DIGNITY_WORD[x.dignity] : "none", x.vargottama ? "yes" : "no"]));
+  const navArudhas = bhavaArudhas({ planets: nav.planets.map((x) => ({ sign: x.sign, deg: x.deg })), lagnaSign: nav.lagna.sign });
+  for (const a of [navArudhas[0], navArudhas[11]]) navRows.push([a.name, SIGN_NAMES[a.sign], String(a.house), "none", "none"]);
+  const schemes = Object.keys(dv.vimshopaka[0]);
+  sections.push({ title: "Divisional charts", tables: [
+    { title: "Signs in the sixteen divisional charts", head: ["Chart", "Lagna", ...GRAHA_HEAD], rows: matrix },
+    { title: "Navamsa", head: ["Point", "Sign and degree", "House", "Dignity", "Vargottama"], rows: navRows },
+    { title: "Vimshopaka bala", head: ["Graha", ...schemes], rows: SEVEN.map((p) => [pname2(p), ...schemes.map((s) => n22(dv.vimshopaka[p][s]))]) }
+  ] });
+  const m = aspectMatrix(c, shadbala.options.drishtiSpecial);
+  const aspectRows = NINE.map((q) => [pname2(q), ...m.rows[q].map((v) => v == null ? "none" : n22(v))]);
+  const points = [{ name: "Lagna", sign: c.lagnaSign, self: -1 }, ...NINE.map((p) => ({ name: pname2(p), sign: P[p].sign, self: p }))];
+  const signRows = points.map((pt) => [pt.name, SIGN_NAMES[pt.sign], list(NINE.filter((q) => q !== pt.self && P[q].sign === pt.sign)), list(NINE.filter((q) => signAspects(P[q].sign, pt.sign)))]);
+  const rel = relationshipTables(c).compound;
+  sections.push({ title: "Aspects and relationships", tables: [
+    { title: "Sputa drishti (virupas), aspecting graha by row", head: ["Aspecting graha", ...GRAHA_HEAD, "Lagna"], rows: aspectRows },
+    { title: "Sign aspects", head: ["Point", "Sign", "Grahas in the sign", "Grahas aspecting the sign"], rows: signRows },
+    { title: "Compound relationships", head: ["Graha", ...SEVEN.map(pname2)], rows: SEVEN.map((p) => [pname2(p), ...SEVEN.map((q) => p === q ? "none" : REL_WORD[rel[p][q]])]) }
+  ] });
+  const ag = computeArgala(c);
+  sections.push({ title: "Argala", tables: [{ head: ["House", "Second house", "Fourth house", "Eleventh house", "Fifth house", "Third house (malefics)"], rows: ag.houses.map((r) => [`${r.label}, ${SIGN_NAMES[r.sign]}`, ...ARGALA_HOUSES.map((a) => none(argalaText(r.argala[a.key]))), none(argalaText(r.argala.vipareeta))]) }] });
+  sections.push({ title: "Upagrahas", tables: [{ head: ["Upagraha", "Sign and degree", "Nakshatra and pada", "House", "Bhava"], rows: (upagrahas || []).map((u) => u.lon == null ? [u.name, u.unavailable || "none", "none", "none", "none"] : [u.name, signDeg(u.lon), nak(u.nakshatra), String(u.house), String(u.bhava)]) }] });
+  const C = shadbala.components, ik = shadbala.ishtaKashta;
+  sections.push({ title: "Shadbala", tables: [{ head: ["Graha", "Total (shashtiamsas)", "Rupas", "Required rupas", "Ratio", "Rank", "Ishta phala", "Kashta phala"], rows: SEVEN.map((p) => [pname2(p), n22(C.total[p]), n22(C.rupas[p]), n22(C.required[p]), n22(C.ratio[p]), String(C.rank[p]), n22(ik.ishta[p]), n22(ik.kashta[p])]) }] });
+  if (ashtakavarga) {
+    const av = ashtakavarga;
+    const sum = (r) => r.reduce((a, b) => a + b, 0);
+    sections.push({ title: "Ashtakavarga", tables: [
+      { title: "Bhinnashtakavarga", head: ["Graha", ...SIGN_NAMES, "Total"], rows: SEVEN.map((p) => [pname2(p), ...av.bav[p].map(String), String(sum(av.bav[p]))]) },
+      { title: "Sarvashtakavarga", head: ["Row", ...SIGN_NAMES, "Total"], rows: [["Sarvashtakavarga", ...av.sav.map(String), String(sum(av.sav))], ["After Trikona and Ekadhipatya shodhana", ...av.savReduced.map(String), String(sum(av.savReduced))]] },
+      { title: "Shodhya pindas", head: ["Graha", "Rasi pinda", "Graha pinda", "Shodhya pinda"], rows: SEVEN.map((p) => [pname2(p), String(av.rasiPinda[p]), String(av.grahaPinda[p]), String(av.shodhyaPinda[p])]) }
+    ] });
+  }
+  sections.push({ title: "Avasthas", tables: [{ head: ["Graha", "Deeptadi", "Lajjitadi"], rows: SEVEN.map((p) => [pname2(p), avasthas.deeptadi[p].states.join(", ") || "none", avasthas.lajjitadi[p].states.join(", ") || "none"]) }] });
+  return sections;
+}
+function buildReport(results) {
+  const c = results.chart;
+  const who = [c.input.name, c.input.gender].filter(Boolean).join(", ");
+  const date = `${c.input.year}-${String(c.input.month).padStart(2, "0")}-${String(c.input.day).padStart(2, "0")} ${fmtHours(c.input.hour + c.input.minute / 60 + (c.input.second || 0) / 3600)}`;
+  const title = who ? `${who}. ${date}, ${c.input.place || ""}`.trim() : `${date}, ${c.input.place || ""}`.trim();
+  const subtitle = "Lahiri ayanamsa, true Rahu, geometric positions, whole-sign houses, Parashara equal bhavas, Hindu sunrise. Planets in the order Sun, Moon, Mars, Mercury, Jupiter, Venus, Saturn, Rahu, Ketu.";
+  return buildDocx({ title, subtitle, sections: reportSections(results) });
+}
+function reportFileName(chart) {
+  const i = chart.input;
+  const who = (i.name || "chart").replace(/[^A-Za-z0-9]+/g, "-").replace(/^-|-$/g, "");
+  return `${who}-${i.year}-${String(i.month).padStart(2, "0")}-${String(i.day).padStart(2, "0")}.docx`;
 }
 
 // src/atlas.js
@@ -5080,21 +5333,21 @@ var eph = null;
 var atlas = null;
 var chosen = null;
 var activeIndex = -1;
-function showSuggestions(list) {
+function showSuggestions(list2) {
   const box = $("suggest");
   box.innerHTML = "";
   activeIndex = -1;
-  if (!list.length) {
+  if (!list2.length) {
     box.hidden = true;
     $("place").setAttribute("aria-expanded", "false");
     return;
   }
-  list.forEach((p, i) => {
+  list2.forEach((p, i) => {
     const b = document.createElement("button");
     b.type = "button";
     b.role = "option";
     b.dataset.index = String(i);
-    b.innerHTML = `<span>${esc2(p.name)}</span><small>${esc2([p.region, p.country].filter(Boolean).join(", "))}</small>`;
+    b.innerHTML = `<span>${esc3(p.name)}</span><small>${esc3([p.region, p.country].filter(Boolean).join(", "))}</small>`;
     b.addEventListener("mousedown", (ev) => {
       ev.preventDefault();
       choose(p);
@@ -5103,9 +5356,9 @@ function showSuggestions(list) {
   });
   box.hidden = false;
   $("place").setAttribute("aria-expanded", "true");
-  box._list = list;
+  box._list = list2;
 }
-var esc2 = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+var esc3 = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
 function choose(p) {
   chosen = p;
   $("place").value = p.label;
@@ -5134,15 +5387,15 @@ function onPlaceInput() {
 }
 function onPlaceKey(ev) {
   const box = $("suggest");
-  const list = box._list || [];
-  if (box.hidden || !list.length) return;
+  const list2 = box._list || [];
+  if (box.hidden || !list2.length) return;
   if (ev.key === "ArrowDown" || ev.key === "ArrowUp") {
     ev.preventDefault();
-    activeIndex = (activeIndex + (ev.key === "ArrowDown" ? 1 : -1) + list.length) % list.length;
+    activeIndex = (activeIndex + (ev.key === "ArrowDown" ? 1 : -1) + list2.length) % list2.length;
     [...box.children].forEach((b, i) => b.classList.toggle("active", i === activeIndex));
   } else if (ev.key === "Enter") {
     ev.preventDefault();
-    choose(list[activeIndex >= 0 ? activeIndex : 0]);
+    choose(list2[activeIndex >= 0 ? activeIndex : 0]);
   } else if (ev.key === "Escape") {
     showSuggestions([]);
   }
@@ -5185,7 +5438,9 @@ function compute() {
     const ashtakavarga = ashtakavargaFromChart(chart);
     const lagnas = computeSpecialLagnas(eph, chart);
     const karakas = charaKarakas(chart);
-    $("results").innerHTML = renderAll({ chart, shadbala, upagrahas, avasthas, ashtakavarga, lagnas, karakas, meta: { sweVersion: eph.version } });
+    lastResults = { chart, shadbala, upagrahas, avasthas, ashtakavarga, lagnas, karakas };
+    $("results").innerHTML = renderAll({ ...lastResults, meta: { sweVersion: eph.version } });
+    $("download").hidden = false;
     try {
       localStorage.setItem("grahabala.last", JSON.stringify({ name: input.name, gender: input.gender, date: $("date").value, time: $("time").value, place }));
     } catch (e) {
@@ -5213,7 +5468,21 @@ function restore() {
     return false;
   }
 }
+var lastResults = null;
+function downloadReport() {
+  if (!lastResults) return;
+  const bytes = buildReport(lastResults);
+  const blob = new Blob([bytes], { type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = reportFileName(lastResults.chart);
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1e3);
+}
 async function init() {
+  $("download").addEventListener("click", downloadReport);
   $("place").addEventListener("input", onPlaceInput);
   $("place").addEventListener("keydown", onPlaceKey);
   $("place").addEventListener("blur", () => setTimeout(() => showSuggestions([]), 150));

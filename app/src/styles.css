@@ -37,6 +37,7 @@ form.inputs input:focus, form.inputs select:focus, button:focus-visible { outlin
 form.inputs .actions { display: flex; gap: 12px; flex-wrap: wrap; grid-column: 1 / -1; align-items: center; margin-top: 2px; }
 button { font: 14px var(--sans); border-radius: 5px; padding: 7px 14px; border: 1px solid var(--line); background: var(--panel); color: var(--ink); cursor: pointer; }
 button.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); font-weight: 600; }
+#download { margin-left: 8px; }
 button:disabled { opacity: 0.5; cursor: default; }
 .status { color: var(--muted); font-size: 13px; }
 .status.error { color: #b3261e; }

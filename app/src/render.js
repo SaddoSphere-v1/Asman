@@ -12,12 +12,12 @@ const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&l
 const n2 = (x) => (x == null || !Number.isFinite(x) ? '—' : (Math.round(x * 100) / 100).toFixed(2));
 const n1 = (x) => (x == null || !Number.isFinite(x) ? '—' : x.toFixed(1));
 const n4 = (x) => (x == null || !Number.isFinite(x) ? '—' : x.toFixed(4));
-const signDeg = (lon) => `${SIGN_NAMES[Math.floor(lon / 30) % 12]} ${fmtDMS(lon % 30, 2)}`;
-const cardinal = (v, pos, neg) => `${Math.abs(v).toFixed(4)}° ${v >= 0 ? pos : neg}`;
-const nak = (n) => `${n.name} ${n.pada}`;
+export const signDeg = (lon) => `${SIGN_NAMES[Math.floor(lon / 30) % 12]} ${fmtDMS(lon % 30, 2)}`;
+export const cardinal = (v, pos, neg) => `${Math.abs(v).toFixed(4)}° ${v >= 0 ? pos : neg}`;
+export const nak = (n) => `${n.name} ${n.pada}`;
 const pname = (p) => PLANET_NAMES[p];
 const TITHI_NAMES = ['Pratipada', 'Dwitiya', 'Tritiya', 'Chaturthi', 'Panchami', 'Shashthi', 'Saptami', 'Ashtami', 'Navami', 'Dashami', 'Ekadashi', 'Dwadashi', 'Trayodashi', 'Chaturdashi', 'Purnima'];
-const tithiName = (t) => (t === 30 ? 'Amavasya' : t === 15 ? 'Purnima' : TITHI_NAMES[(t - 1) % 15]);
+export const tithiName = (t) => (t === 30 ? 'Amavasya' : t === 15 ? 'Purnima' : TITHI_NAMES[(t - 1) % 15]);
 
 function table(caption, head, rows, cls = '') {
   const th = head.map((h, i) => `<th scope="col"${i ? '' : ' class="rowhead"'}>${esc(h)}</th>`).join('');
@@ -26,8 +26,8 @@ function table(caption, head, rows, cls = '') {
 }
 const num = (x, d = 2) => ({ html: esc(d === 4 ? n4(x) : d === 2 ? n2(x) : n1(x)), cls: 'num' });
 const txt = (s, cls) => ({ html: esc(s), cls });
-const grahaList = (list) => (list.length ? list.map(pname).join(', ') : '—');
-const vargaPositions = (v) => ({ planets: v.planets.map(x => ({ sign: x.sign, deg: x.deg })), lagnaSign: v.lagna.sign });
+export const grahaList = (list) => (list.length ? list.map(pname).join(', ') : '—');
+export const vargaPositions = (v) => ({ planets: v.planets.map(x => ({ sign: x.sign, deg: x.deg })), lagnaSign: v.lagna.sign });
 
 export function renderAll({ chart, shadbala, upagrahas, avasthas, ashtakavarga, lagnas, karakas, meta }) {
   const c = chart, off = c.input.utcOffset;
@@ -165,7 +165,7 @@ function renderAshtakavarga(av) {
   return `<section id="ashtakavarga"><h2>Ashtakavarga</h2>${bav}<h2>After Trikona shodhana</h2>${trik}<h2>After Ekadhipatya shodhana</h2>${eka}<h2>Shodhya pindas</h2>${pindas}</section>`;
 }
 
-const REL_WORD = { F: 'Friend', N: 'Neutral', E: 'Enemy', adhimitra: 'Great friend', mitra: 'Friend', sama: 'Neutral', satru: 'Enemy', adhisatru: 'Great enemy' };
+export const REL_WORD = { F: 'Friend', N: 'Neutral', E: 'Enemy', adhimitra: 'Great friend', mitra: 'Friend', sama: 'Neutral', satru: 'Enemy', adhisatru: 'Great enemy' };
 const yes = (b) => ({ html: b ? 'Yes' : '', cls: b ? '' : 'muted' });
 
 function renderDignities(c) {
@@ -190,7 +190,7 @@ function renderAspects(c, special) {
   return `<section id="aspects"><h2>Aspects</h2>${table('', head, rows, 'matrix')}<h2>Sign aspects</h2>${table('', ['Point', 'Sign', 'Grahas in the sign', 'Grahas aspecting the sign'], signRows)}</section>`;
 }
 
-const DIGNITY_WORD = { exalted: 'Exalted', moolatrikona: 'Moolatrikona', own: 'Own sign', debilitated: 'Debilitated', adhimitra: "Great friend's sign", mitra: "Friend's sign", sama: "Neutral's sign", satru: "Enemy's sign", adhisatru: "Great enemy's sign" };
+export const DIGNITY_WORD = { exalted: 'Exalted', moolatrikona: 'Moolatrikona', own: 'Own sign', debilitated: 'Debilitated', adhimitra: "Great friend's sign", mitra: "Friend's sign", sama: "Neutral's sign", satru: "Enemy's sign", adhisatru: "Great enemy's sign" };
 
 function renderDivisional(c, dv) {
   const head = ['Chart', 'Lagna', ...NINE.map(pname)];
@@ -246,13 +246,15 @@ function renderKarakamsa(c) {
   return `<section id="karakamsa"><h2>Karakamsa</h2>${summary}${table('', ['Graha', 'Rasi sign', 'House from Karakamsa', 'Navamsa sign', 'House from Swamsa'], rows)}</section>`;
 }
 
-function argalaCell(a) {
-  if (!a.giving.length) return txt('—', 'muted');
+/** Plain-text argala cell: givers, then the obstruction verdict; malefics only for the third house. */
+export function argalaText(a) {
+  if (!a.giving.length) return null;
   const who = a.giving.map(pname).join(', ');
-  if (a.house === 3) return txt(who, 'wrap');
+  if (a.house === 3) return who;
   const obs = a.obstructing.length ? ` · ${a.obstructed ? 'obstructed by' : 'not obstructed by'} ${a.obstructing.map(pname).join(', ')}` : ' · unobstructed';
-  return txt(who + obs, 'wrap');
+  return who + obs;
 }
+function argalaCell(a) { const t = argalaText(a); return t == null ? txt('—', 'muted') : txt(t, 'wrap'); }
 
 function renderArgala(c) {
   const ag = computeArgala(c);

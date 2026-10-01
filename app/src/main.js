@@ -12,6 +12,7 @@ import { computeAvasthas } from './avasthas.js';
 import { ashtakavargaFromChart } from './ashtakavarga.js';
 import { computeSpecialLagnas, charaKarakas } from './lagnas.js';
 import { renderAll } from './render.js';
+import { buildReport, reportFileName } from './report.js';
 import { zoneOffsetHours, formatOffset } from './time.js';
 import { loadAtlas, Atlas } from './atlas.js';
 
@@ -99,7 +100,9 @@ function compute() {
     const ashtakavarga = ashtakavargaFromChart(chart);
     const lagnas = computeSpecialLagnas(eph, chart);
     const karakas = charaKarakas(chart);
-    $('results').innerHTML = renderAll({ chart, shadbala, upagrahas, avasthas, ashtakavarga, lagnas, karakas, meta: { sweVersion: eph.version } });
+    lastResults = { chart, shadbala, upagrahas, avasthas, ashtakavarga, lagnas, karakas };
+    $('results').innerHTML = renderAll({ ...lastResults, meta: { sweVersion: eph.version } });
+    $('download').hidden = false;
     try { localStorage.setItem('grahabala.last', JSON.stringify({ name: input.name, gender: input.gender, date: $('date').value, time: $('time').value, place })); } catch (e) { /* ignore */ }
   } catch (e) {
     status.textContent = e.message || String(e); status.classList.add('error');
@@ -117,7 +120,19 @@ function restore() {
   } catch (e) { return false; }
 }
 
+let lastResults = null;
+function downloadReport() {
+  if (!lastResults) return;
+  const bytes = buildReport(lastResults);
+  const blob = new Blob([bytes], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = reportFileName(lastResults.chart);
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+
 async function init() {
+  $('download').addEventListener('click', downloadReport);
   $('place').addEventListener('input', onPlaceInput);
   $('place').addEventListener('keydown', onPlaceKey);
   $('place').addEventListener('blur', () => setTimeout(() => showSuggestions([]), 150));

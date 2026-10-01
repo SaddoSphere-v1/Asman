@@ -15,6 +15,8 @@ Single-file HTML (`../graha-bala.html`) that computes, for any birth, exactly wh
 
 The page asks for five things only: **Name, Gender, Birthday, Birthtime, Birthplace**. The birthplace is resolved offline by an embedded atlas (GeoNames, every place with population ≥ 5000: coordinates, region, country and time zone; the historical offset comes from the browser's time-zone database). Coordinates such as `13.08, 80.27` are accepted too.
 
+After Compute, **Download Word document** writes a `.docx` from the same computed results: thirteen sections of plain tables for a reader to scan (identity; placements with dignity; house lords; special lagnas and Varnada lagnas; arudha and graha arudhas; Karakamsa; the sixteen-varga sign matrix, the Navamsa and Vimshopaka; sputa drishti, sign aspects and compound relationships; argala; upagrahas; Shadbala totals with Ishta / Kashta; Ashtakavarga with the reduced Sarvashtakavarga and pindas; avasthas). The file is written by a small dependency-free WordprocessingML writer (`src/docx.js`); empty values read "none".
+
 Conventions are fixed to **Lahiri ayanamsa** and **true Rahu** (Ketu opposite). Everything else that varies between texts is a named option in the engine (`SHADBALA_DEFAULTS`, `UPAGRAHA_DEFAULTS`, `AVASTHA_DEFAULTS`, `DEFAULT_OPTIONS`) whose default follows JHora / B.V. Raman's *Graha and Bhava Balas*, which JHora's release notes cite as its source for balas. The page itself exposes no options.
 
 ## Engine
@@ -29,7 +31,7 @@ Swiss Ephemeris is licensed AGPL-3.0-or-later; the built HTML is the complete co
 app/
   src/            ES modules: sweph.js (WASM wrapper) · time.js · constants.js · vargas.js · relations.js · atlas.js
                   chart.js (positions, houses, Hindu day) · upagrahas.js · lagnas.js · lagnatables.js · argala.js · arudhas.js · ashtakavarga.js
-                  shadbala.js · avasthas.js · tables.js · render.js · main.js
+                  shadbala.js · avasthas.js · tables.js · render.js · report.js · docx.js · main.js
   vendor/         Swiss Ephemeris WASM + data files (AGPL)
   data/           atlas.tsv.gz — GeoNames places ≥ 5000 (CC BY 4.0)
   test/           node:test suites and JSON fixtures
@@ -56,6 +58,7 @@ npm test             # parity + regression tests
 - `test/lagnatables.test.mjs`: houses and aspects from each special lagna checked against direct recomputation from the chart.
 - `test/varnada-karakamsa.test.mjs`: Varnada lagnas of all twelve houses against PyJHora; Karakamsa / Swamsa against direct recomputation.
 - `test/panchanga.test.mjs`: tithi, karana and nitya yoga at birth against pyswisseph; the karana sequence.
+- `test/report.test.mjs`: the Word report's thirteen sections (shape, no empty cells, no abbreviations), the zip writer against Python's zipfile, and the generated file opened with python-docx (headings, tables, title).
 - `test/avasthas.test.mjs`: rule-level tests of every Deeptadi and Lajjitadi condition on constructed charts.
 - `test/atlas.test.mjs`: place lookup by current name, former name (Madras, Bombay, Bangalore), with region or country, and coordinate fallback.
 
