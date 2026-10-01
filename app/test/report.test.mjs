@@ -73,8 +73,8 @@ print(sum(1 for t in d.tables for r in t.rows for c in r.cells if c.text.strip()
 `;
   const out = execFileSync(py, ['-c', code, tmp]).toString().trim().split('\n');
   fs.unlinkSync(tmp);
-  const [n1, n2, nt, title] = out[0].split(' ', 4);
-  assert.equal(n1, '13'); assert.equal(nt, '21'); assert.ok(title.startsWith('Test Person, Male. 2003-07-20 20:40:00, Kitchener'));
+  const m = out[0].match(/^(\d+) (\d+) (\d+) (.*)$/);
+  assert.equal(m[1], '13'); assert.equal(m[3], '21'); assert.ok(m[4].startsWith('Test Person, Male. 2003-07-20 20:40:00, Kitchener'), m[4]);
   assert.equal(out[1], '1. Identity|2. Placements|3. House lords|4. Special lagnas|5. Arudha padas|6. Karakamsa|7. Divisional charts|8. Aspects and relationships|9. Argala|10. Upagrahas|11. Shadbala|12. Ashtakavarga|13. Avasthas');
   assert.equal(out[2], 'Field Value 17');
   assert.equal(out[3], '8 8');
